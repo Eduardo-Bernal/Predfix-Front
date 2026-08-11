@@ -36,7 +36,7 @@ export default function Routes() {
     return (
         <NavigationContainer>
             <Stack.Navigator
-                initialRouteName="Listagem"
+                initialRouteName="CriarInspecao"
                 screenOptions={{ headerShown: false }}
             >
                 <Stack.Screen
