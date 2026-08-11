@@ -37,7 +37,7 @@ export default function BottomNavBar({
                         },
                     ]}
                 >
-                    Minhas OS
+                    Inspeções
                 </Text>
             </TouchableOpacity>
 

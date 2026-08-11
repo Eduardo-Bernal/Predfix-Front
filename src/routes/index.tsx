@@ -4,10 +4,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./types";
 import React from "react";
 import Login from "../pages/login/Login";
-import Listagem from "../pages/listagem/CriarInspecao";
+import Listagem from "../pages/listagem/Listagem";
 import Perfil from "../pages/perfil/Perfil";
 import Detalhes from "../pages/detalhes/Detalhes";
 import CriarInspecao from "../pages/criarInspecao/CriarInspecao";
+
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,7 +36,7 @@ export default function Routes() {
     return (
         <NavigationContainer>
             <Stack.Navigator
-                initialRouteName="Login"
+                initialRouteName="Listagem"
                 screenOptions={{ headerShown: false }}
             >
                 <Stack.Screen
@@ -59,7 +60,7 @@ export default function Routes() {
                 />
 
                 <Stack.Screen
-                    name="Detalhes"
+                    name="CriarInspecao"
                     component={CriarInspecao}
                 />
 
