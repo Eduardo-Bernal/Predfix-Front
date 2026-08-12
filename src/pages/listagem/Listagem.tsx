@@ -1,53 +1,94 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     View,
     Text,
     ScrollView,
     TouchableOpacity,
     StyleSheet,
+    ActivityIndicator,
+    RefreshControl,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomNavBar from "../components/bottomNavBar";
+import {listarInspecoes} from "../../services/ListagemService";
 
-const inspecoes = [
-    {
-        id: 1,
-        titulo: "Elevador Social",
-        local: "Condomínio Solar",
-        data: "25/10/2023 10:30",
-        status: "pendencia",
-    },
-    {
-        id: 2,
-        titulo: "Extintor PQS",
-        local: "Empresa Tech",
-        data: "24/10/2023 14:15",
-        status: "conforme",
-    },
-    {
-        id: 3,
-        titulo: "Gerador Principal",
-        local: "Hospital Central",
-        data: "23/10/2023 09:00",
-        status: "conforme",
-    },
-];
+interface Inspecao {
+    inspecaoID: number;
+    equipamento: string;
+    localizacao: string;
+    cliente: string;
+    statusInspecao: boolean;
+    statusTexto: string;
+    dataCriacao: string;
+    usuarioID: number;
+}
 
-const abas = ["Todas", "Conforme", "Com pendência"];
+const abas = ["Todas", "Conforme", "Com pendência"] as const;
+type Aba = (typeof abas)[number];
+
+function temPendencia(inspecao: Inspecao) {
+    return inspecao.statusInspecao === true;
+}
+
+function formatarData(dataCriacao: string) {
+    const data = new Date(dataCriacao);
+    if (isNaN(data.getTime())) return dataCriacao;
+
+    return data.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
 
 export default function Listagem() {
-    const [tabAtiva, setTabAtiva] = useState("Todas");
+    const [tabAtiva, setTabAtiva] = useState<Aba>("Todas");
+    const [inspecoes, setInspecoes] = useState<Inspecao[]>([]);
+    const [carregando, setCarregando] = useState(true);
+    const [atualizando, setAtualizando] = useState(false);
+    const [erro, setErro] = useState<string | null>(null);
+
+    const carregarInspecoes = useCallback(async () => {
+        setErro(null);
+        try {
+            const data = await listarInspecoes();
+            setInspecoes(data ?? []);
+        } catch (error) {
+            setErro("Não foi possível carregar as inspeções.");
+        }
+    }, []);
+
+    useEffect(() => {
+        (async () => {
+            setCarregando(true);
+            await carregarInspecoes();
+            setCarregando(false);
+        })();
+    }, [carregarInspecoes]);
+
+    const onRefresh = useCallback(async () => {
+        setAtualizando(true);
+        await carregarInspecoes();
+        setAtualizando(false);
+    }, [carregarInspecoes]);
 
     const inspecoesFiltradas = inspecoes.filter((item) => {
         if (tabAtiva === "Todas") return true;
-        if (tabAtiva === "Conforme") return item.status === "conforme";
-        if (tabAtiva === "Com pendência") return item.status === "pendencia";
+        if (tabAtiva === "Conforme") return !temPendencia(item);
+        if (tabAtiva === "Com pendência") return temPendencia(item);
         return true;
     });
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl refreshing={atualizando} onRefresh={onRefresh} />
+                }
+            >
                 <Text style={styles.titulo}>Inspeções</Text>
 
                 <TouchableOpacity style={styles.botaoNova}>
@@ -74,71 +115,102 @@ export default function Listagem() {
                     ))}
                 </View>
 
-                {inspecoesFiltradas.map((item) => (
-                    <TouchableOpacity
-                        key={item.id}
-                        style={[
-                            styles.card,
-                            {
-                                borderLeftColor:
-                                    item.status === "pendencia" ? "#E53935" : "#2E7D32",
-                            },
-                        ]}
-                    >
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitulo}>{item.titulo}</Text>
-                            <View
+                {carregando && (
+                    <View style={styles.estadoContainer}>
+                        <ActivityIndicator size="large" color="#0D2B6B" />
+                        <Text style={styles.estadoTexto}>Carregando inspeções...</Text>
+                    </View>
+                )}
+
+                {!carregando && erro && (
+                    <View style={styles.estadoContainer}>
+                        <Ionicons name="alert-circle-outline" size={28} color="#E53935" />
+                        <Text style={styles.estadoTexto}>{erro}</Text>
+                        <TouchableOpacity onPress={carregarInspecoes} style={styles.botaoTentarNovamente}>
+                            <Text style={styles.botaoTentarNovamenteTexto}>Tentar novamente</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {!carregando && !erro && inspecoesFiltradas.length === 0 && (
+                    <View style={styles.estadoContainer}>
+                        <Ionicons name="document-text-outline" size={28} color="#9E9E9E" />
+                        <Text style={styles.estadoTexto}>Nenhuma inspeção encontrada.</Text>
+                    </View>
+                )}
+
+                {!carregando &&
+                    !erro &&
+                    inspecoesFiltradas.map((item) => {
+                        const pendente = temPendencia(item);
+                        return (
+                            <TouchableOpacity
+                                key={item.inspecaoID}
                                 style={[
-                                    styles.badge,
+                                    styles.card,
                                     {
-                                        backgroundColor:
-                                            item.status === "pendencia" ? "#FDECEA" : "#E6F4EA",
+                                        borderLeftColor: pendente ? "#E53935" : "#2E7D32",
                                     },
                                 ]}
                             >
-                                <Ionicons
-                                    name={
-                                        item.status === "pendencia"
-                                            ? "warning-outline"
-                                            : "checkmark-circle-outline"
-                                    }
-                                    size={14}
-                                    color={item.status === "pendencia" ? "#E53935" : "#2E7D32"}
-                                />
-                                <Text
-                                    style={[
-                                        styles.badgeTexto,
-                                        {
-                                            color:
-                                                item.status === "pendencia" ? "#E53935" : "#2E7D32",
-                                        },
-                                    ]}
-                                >
-                                    {item.status === "pendencia" ? "Pendência" : "Conforme"}
-                                </Text>
-                            </View>
-                        </View>
+                                <View style={styles.cardHeader}>
+                                    <Text style={styles.cardTitulo}>{item.equipamento}</Text>
+                                    <View
+                                        style={[
+                                            styles.badge,
+                                            {
+                                                backgroundColor: pendente ? "#FDECEA" : "#E6F4EA",
+                                            },
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            name={
+                                                pendente ? "warning-outline" : "checkmark-circle-outline"
+                                            }
+                                            size={14}
+                                            color={pendente ? "#E53935" : "#2E7D32"}
+                                        />
+                                        <Text
+                                            style={[
+                                                styles.badgeTexto,
+                                                {
+                                                    color: pendente ? "#E53935" : "#2E7D32",
+                                                },
+                                            ]}
+                                        >
+                                            {item.statusTexto}
+                                        </Text>
+                                    </View>
+                                </View>
 
-                        <View style={styles.linha}>
-                            <Ionicons name="location-outline" size={14} color="#757575" />
-                            <Text style={styles.textoSecundario}>{item.local}</Text>
-                        </View>
+                                <View style={styles.linha}>
+                                    <Ionicons name="location-outline" size={14} color="#757575" />
+                                    <Text style={styles.textoSecundario}>{item.localizacao}</Text>
+                                </View>
 
-                        <View style={styles.separador} />
+                                <View style={styles.linha}>
+                                    <Ionicons name="business-outline" size={14} color="#757575" />
+                                    <Text style={styles.textoSecundario}>{item.cliente}</Text>
+                                </View>
 
-                        <View style={styles.linhaData}>
-                            <View style={styles.linha}>
-                                <MaterialCommunityIcons
-                                    name="calendar-blank-outline"
-                                    size={14}
-                                    color="#757575"
-                                />
-                                <Text style={styles.textoSecundario}>{item.data}</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
-                        </View>
-                    </TouchableOpacity>
-                ))}
+                                <View style={styles.separador} />
+
+                                <View style={styles.linhaData}>
+                                    <View style={styles.linha}>
+                                        <MaterialCommunityIcons
+                                            name="calendar-blank-outline"
+                                            size={14}
+                                            color="#757575"
+                                        />
+                                        <Text style={styles.textoSecundario}>
+                                            {formatarData(item.dataCriacao)}
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })}
             </ScrollView>
 
             <BottomNavBar />
@@ -238,6 +310,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 6,
+        marginBottom: 4,
     },
     textoSecundario: {
         fontSize: 13,
@@ -253,5 +326,28 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+    },
+    estadoContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 40,
+        gap: 8,
+    },
+    estadoTexto: {
+        fontSize: 14,
+        color: "#757575",
+        textAlign: "center",
+    },
+    botaoTentarNovamente: {
+        marginTop: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        backgroundColor: "#0D2B6B",
+    },
+    botaoTentarNovamenteTexto: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 13,
     },
 });
