@@ -1,6 +1,8 @@
 import { View, Text, TextInput, Alert, Pressable, StyleSheet, ScrollView } from "react-native";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import React, { useEffect, useState } from "react";
+import { Feather } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 
 
 export default function CriarInspecao() {
@@ -98,214 +100,226 @@ export default function CriarInspecao() {
     }
 
     return (
-        // tela inteira
-        <ScrollView
-            contentContainerStyle={estilos.container}
-            showsVerticalScrollIndicator={false}
-        >
+        <>
+        {/* statusBar */}
+            <StatusBar hidden/>
 
-            {/* forms */}
-            <View style={estilos.forms}>
-                <Text style={estilos.label}>EQUIPAMENTO</Text>
-                <TextInput
-                    placeholder="Ex: Bomba Hidráulica BH-01"
-                    placeholderTextColor={"#5D6574"}
-                    style={estilos.input}
-                ></TextInput>
+        {/* tela inteira */}
+            <ScrollView
+                contentContainerStyle={estilos.container}
+                showsVerticalScrollIndicator={false}
+            >
 
-                <Text style={estilos.label}>LOCAL</Text>
-                <TextInput
-                    placeholder="Ex: Setor Sul"
-                    placeholderTextColor={"#5D6574"}
-                    style={estilos.input}
-                ></TextInput>
+                {/* forms */}
+                <View style={estilos.forms}>
+                    <Text style={estilos.label}>EQUIPAMENTO</Text>
+                    <TextInput
+                        placeholder="Ex: Bomba Hidráulica BH-01"
+                        placeholderTextColor={"#5D6574"}
+                        style={estilos.input}
+                    ></TextInput>
 
-                <Text style={estilos.label}>CLIENTE</Text>
-                <TextInput
-                    placeholder="Ex: Cliente Alpha"
-                    placeholderTextColor={"#5D6574"}
-                    style={estilos.input}
-                ></TextInput>
+                    <Text style={estilos.label}>LOCAL</Text>
+                    <TextInput
+                        placeholder="Ex: Setor Sul"
+                        placeholderTextColor={"#5D6574"}
+                        style={estilos.input}
+                    ></TextInput>
+
+                    <Text style={estilos.label}>CLIENTE</Text>
+                    <TextInput
+                        placeholder="Ex: Cliente Alpha"
+                        placeholderTextColor={"#5D6574"}
+                        style={estilos.input}
+                    ></TextInput>
 
 
 
-                <Text style={estilos.label}>SITUAÇÃO</Text>
-                <View style={estilos.botoesSituacao}>
+                    <Text style={estilos.label}>SITUAÇÃO</Text>
+                    <View style={estilos.botoesSituacao}>
 
-                    {/* Conforme */}
-                    <Pressable
-                        onPress={() => setSituacao("conforme")}
-                        style={[
-                            estilos.botaoSituacao,
-                            situacao === "conforme" && estilos.botaoConformeAtivo,
-                        ]}
-                    >
-                        <Text
+                        {/* Conforme */}
+                        <Pressable
+                            onPress={() => setSituacao("conforme")}
                             style={[
-                                estilos.iconeSituacao,
-                                situacao === "conforme" && estilos.textoAtivo,
+                                estilos.botaoSituacao,
+                                situacao === "conforme" && estilos.botaoConformeAtivo,
                             ]}
                         >
-                            ✓
-                        </Text>
-
-                        <Text
-                            style={[
-                                estilos.textoSituacao,
-                                situacao === "conforme" && estilos.textoAtivo,
-                            ]}
-                        >
-                            Conforme
-                        </Text>
-                    </Pressable>
-
-
-                    {/* COM PENDÊNCIA */}
-                    <Pressable
-                        onPress={() => setSituacao("pendencia")}
-                        style={[
-                            estilos.botaoSituacao,
-                            situacao === "pendencia" && estilos.botaoPendenciaAtivo,
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                estilos.iconeSituacao,
-                                situacao === "pendencia" && estilos.textoAtivo,
-                            ]}
-                        >
-                            ⚠
-                        </Text>
-
-                        <Text
-                            style={[
-                                estilos.textoSituacao,
-                                situacao === "pendencia" && estilos.textoAtivo,
-                            ]}
-                        >
-                            Com
-                            {"\n"}
-                            pendência
-                        </Text>
-                    </Pressable>
-
-                </View>
-
-
-            </View>
-
-            {/* audio */}
-            <View style={estilos.formAudio}>
-                <Text style={estilos.tituloAudio}>Observação em áudio</Text>
-                <Text>Grave uma nota de voz detalhando a inspeção.</Text>
-                <Text style={estilos.obrigatorio}>*Obrigatório</Text>
-
-                <Pressable
-                    onPress={controlarGravacao}
-                    style={[
-                        estilos.botaoAudio,
-
-                        recorderState.isRecording
-                            ? estilos.botaoGravando
-                            : audioRecorder.uri
-                                ? estilos.botaoGravado
-                                : estilos.botaoInicial,
-                    ]}
-                >
-
-                    {recorderState.isRecording ? (
-
-                        <>
-                            <Text style={estilos.icone}>
-                                ■
-                            </Text>
-
-                            <Text style={estilos.textoBotao}>
-                                Gravando...
-                            </Text>
-
-                            <Text style={estilos.tempo}>
-                                {Math.floor(
-                                    recorderState.durationMillis / 1000
-                                )}s
-                            </Text>
-                        </>
-
-                    ) : audioRecorder.uri ? (
-
-                        <>
-                            <Text style={estilos.icone}>
+                            <Text
+                                style={[
+                                    estilos.iconeSituacao,
+                                    situacao === "conforme" && estilos.textoAtivo,
+                                ]}
+                            >
                                 ✓
                             </Text>
 
-                            <Text style={estilos.textoBotao}>
-                                Áudio gravado
+                            <Text
+                                style={[
+                                    estilos.textoSituacao,
+                                    situacao === "conforme" && estilos.textoAtivo,
+                                ]}
+                            >
+                                Conforme
                             </Text>
-                        </>
+                        </Pressable>
 
-                    ) : (
 
-                        <>
-                            <Text style={estilos.icone}>
-                                🎙
+                        {/* COM PENDÊNCIA */}
+                        <Pressable
+                            onPress={() => setSituacao("pendencia")}
+                            style={[
+                                estilos.botaoSituacao,
+                                situacao === "pendencia" && estilos.botaoPendenciaAtivo,
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    estilos.iconeSituacao,
+                                    situacao === "pendencia" && estilos.textoAtivo,
+                                ]}
+                            >
+                                ⚠
                             </Text>
 
-                            <Text style={estilos.textoBotao}>
-                                Gravar observação
+                            <Text
+                                style={[
+                                    estilos.textoSituacao,
+                                    situacao === "pendencia" && estilos.textoAtivo,
+                                ]}
+                            >
+                                Com
+                                {"\n"}
+                                pendência
                             </Text>
-                        </>
+                        </Pressable>
 
-                    )}
+                    </View>
 
-                </Pressable>
-            </View>
 
-            {/* botao salvar */}
-            <View>
-                <Pressable
-                    style={estilos.botaoSalvar}
-                    onPress={salvarInspecao}
-                >
-                    <Text style={estilos.textoSalvar}>
-                        Salvar inspeção
-                    </Text>
-                </Pressable>
-            </View>
-        </ScrollView>
+                </View>
+
+                {/* audio */}
+                <View style={estilos.formAudio}>
+                    <Text style={estilos.tituloAudio}>Observação em áudio</Text>
+                    <Text style={estilos.textoAudio}>Grave uma nota de voz detalhando a inspeção.</Text>
+                    <Text style={estilos.obrigatorio}>*Obrigatório</Text>
+
+                    <Pressable
+                        onPress={controlarGravacao}
+                        style={[
+                            estilos.botaoAudio,
+
+                            recorderState.isRecording
+                                ? estilos.botaoGravando
+                                : audioRecorder.uri
+                                    ? estilos.botaoGravado
+                                    : estilos.botaoInicial,
+                        ]}
+                    >
+
+                        {recorderState.isRecording ? (
+
+                            <>
+                                <Text style={estilos.icone}>
+                                    ■
+                                </Text>
+
+                                <Text style={estilos.textoBotao}>
+                                    Gravando...
+                                </Text>
+
+                                <Text style={estilos.tempo}>
+                                    {Math.floor(
+                                        recorderState.durationMillis / 1000
+                                    )}s
+                                </Text>
+                            </>
+
+                        ) : audioRecorder.uri ? (
+
+                            <>
+                                <Text style={estilos.icone}>
+                                    ✓
+                                </Text>
+
+                                <Text style={estilos.textoBotao}>
+                                    Áudio gravado
+                                </Text>
+                            </>
+
+                        ) : (
+
+                            <>
+                                <Text style={estilos.icone}>
+                                    <Feather
+                                        name="mic"
+                                        size={60}
+                                    />
+                                </Text>
+
+                                <Text style={estilos.textoBotao}>
+                                    Gravar observação
+                                </Text>
+                            </>
+
+                        )}
+
+                    </Pressable>
+                </View>
+
+                {/* botao salvar */}
+                <View>
+                    <Pressable
+                        style={estilos.botaoSalvar}
+                        onPress={salvarInspecao}
+                    >
+                        <Text style={estilos.textoSalvar}>
+                            Salvar inspeção
+                        </Text>
+                    </Pressable>
+                </View>
+            </ScrollView>
+        </>
     )
 }
 
 const estilos = StyleSheet.create({
     container: {
-        backgroundColor: "#FAF9FF",
+        backgroundColor: "#F8F7FF",
         // flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        padding: 10,
+        padding: 20,
+        // height: "100%"
     },
 
     forms: {
         backgroundColor: "#FFFFFF",
         margin: 10,
         width: "100%",
-        padding: 10,
-        height: 300,
-        borderRadius: 4,
+        padding: 20,
+        height: 430,
+        borderRadius: 5,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,
     },
 
     label: {
         fontWeight: "bold",
+        color: "#rgba(93, 101, 116, 1)",
+        fontSize: 20
     },
 
     input: {
-        backgroundColor: "#FAF9FF",
+        backgroundColor: "#F8F7FF",
         borderColor: "#rgba(93, 101, 116, 0.8)",
+        fontSize: 20,
         borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 5,
         width: "100%",
-        height: 40,
+        height: 60,
         padding: 5,
         marginBottom: 10
 
@@ -323,12 +337,12 @@ const estilos = StyleSheet.create({
 
     botaoSituacao: {
         flex: 1,
-        height: 40,
+        height: 60,
         // width: "100%",
 
         borderWidth: 2,
         borderColor: "#C5C9D8",
-        borderRadius: 4,
+        borderRadius: 5,
 
         backgroundColor: "#FFFFFF",
 
@@ -350,39 +364,45 @@ const estilos = StyleSheet.create({
     },
 
     iconeSituacao: {
-        fontSize: 20,
+        fontSize: 30,
         color: "#777D8C",
         fontWeight: "500",
     },
 
     textoSituacao: {
-        fontSize: 10,
+        fontSize: 20,
         fontWeight: "500",
         color: "#777D8C",
         textAlign: "center",
     },
 
     textoAtivo: {
-        color: "#FFFFFF",
+        color: "black",
     },
 
     formAudio: {
         backgroundColor: "#FFFFFF",
         margin: 10,
         width: "100%",
-        padding: 10,
-        height: 300,
+        padding: 20,
+        height: 360,
         borderRadius: 4,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,
     },
 
     tituloAudio: {
-        fontWeight: "bold"
+        fontWeight: "bold",
+        fontSize: 25,
+    },
+
+    textoAudio: {
+        fontSize: 20
     },
 
     obrigatorio: {
-        color: "#BA0D0D"
+        color: "#BA0D0D",
+        fontSize: 20
     },
 
     botaoAudio: {
@@ -393,20 +413,23 @@ const estilos = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 4,
-        alignSelf: "center"
+        alignSelf: "center",
     },
 
     icone: {
         color: "white",
-        fontSize: 50
+        fontSize: 60
     },
 
     textoBotao: {
-        color: "white"
+        color: "white",
+        fontSize: 20,
+        paddingTop: 10
     },
 
     tempo: {
-        color: "white"
+        color: "white",
+        fontSize: 20
     },
 
     botaoGravando: {
@@ -417,10 +440,12 @@ const estilos = StyleSheet.create({
         backgroundColor: "green"
     },
 
+    botaoInicial: {},
+
     botaoSalvar: {
         backgroundColor: "#003D9B",
-        height: 40,
-        width: 310,
+        height: 60,
+        width: 370,
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 4,
@@ -429,6 +454,7 @@ const estilos = StyleSheet.create({
 
     textoSalvar: {
         color: "white",
-        fontWeight: "bold"
+        fontWeight: "bold",
+        fontSize: 20
     }
 })
