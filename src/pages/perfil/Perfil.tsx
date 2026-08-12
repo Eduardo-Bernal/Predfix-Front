@@ -8,21 +8,34 @@ export default function Perfil() {
                 <Image source={require('../../../assets/imgs/Text.png')} style={estilos.imgLogo} />
                 <Image source={require('../../../assets/imgs/perfil.png')} style={estilos.imgPerfil1} />
             </View>
+            <View style={estilos.linha}></View>
             <View>
                 <Text style={estilos.text1}>Perfil</Text>
             </View>
             <View style={estilos.iniciaisPerfil}>
                 <Image source={require('../../../assets/imgs/perfil.png')} style={estilos.imgPerfil2} />
             </View>
+            <View style={estilos.areaDados}>
+                <View style={estilos.areaNome}>
+                    <Text style={estilos.nome1}>Nome</Text>
+                    <Text style={estilos.nome2}>João Carlos</Text>
+                </View>
+                <View style={estilos.linha}></View>
+                <View style={estilos.areaEmail}>
+                    <Text style={estilos.email1}>Email</Text>
+                    <Text style={estilos.email2}>joaocarlos@predifix.com</Text>
+                </View>
+            </View>
         </View>
     )
 }
 
 const estilos = StyleSheet.create({
-    safearea: { flex: 1 },
-    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    safearea: {
+        flex: 1,
+    },
+
     cabecalho: {
-        gap: 200,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
@@ -30,18 +43,36 @@ const estilos = StyleSheet.create({
     },
 
     imgLogo: {
-
+        width: 100,
+        height: 40,
+        resizeMode: "contain",
     },
+
     imgPerfil1: {
         width: 40,
         height: 45,
-        borderRadius: 10
+        borderRadius: 10,
     },
 
     text1: {
         fontSize: 30,
         fontWeight: "bold",
-        margin: 30,
+        marginHorizontal: 30,
+        marginTop: 10,
+        marginBottom: 15,
+    },
+
+    iniciaisPerfil: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f3f3f3",
+        padding: 20,
+        marginHorizontal: 30,
+        marginTop: 0,
+        marginBottom: 15,
+        borderRadius: 10,
+        borderColor: "#535353",
+        borderWidth: 1,
     },
 
     imgPerfil2: {
@@ -50,13 +81,44 @@ const estilos = StyleSheet.create({
         borderRadius: 10,
     },
 
-    iniciaisPerfil: {
-        flex: 1,                 // Ocupa todo o espaço disponível
-        justifyContent: 'center', // Centraliza verticalmente
-        alignItems: 'center',     // Centraliza horizontalmente
-        backgroundColor: '#ee3e3e',
-        padding: 75,
-        
-    }
+    areaDados: {
+        backgroundColor: "#f3f3f3",
+        padding: 20,
+        marginHorizontal: 30,
+        marginTop: 15,
+        borderRadius: 10,
+        borderColor: "#535353",
+        borderWidth: 1,
+        gap: 10,
+    },
 
-})
+    areaNome: {
+        marginBottom: 15,
+    },
+
+    nome1: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+
+    nome2: {
+        fontSize: 15,
+    },
+
+    areaEmail: {},
+
+    email1: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+
+    email2: {
+        fontSize: 15,
+    },
+
+    linha: {
+        height: 2,
+        width: "100%",
+        backgroundColor: '#bbbaba',
+    },
+});
