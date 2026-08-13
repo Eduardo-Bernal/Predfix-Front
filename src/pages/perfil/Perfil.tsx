@@ -71,8 +71,14 @@ const estilos = StyleSheet.create({
         marginTop: 0,
         marginBottom: 15,
         borderRadius: 10,
-        borderColor: "#535353",
-        borderWidth: 1,
+        borderColor: "#cacaca",
+        borderWidth: 0,
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
+
     },
 
     imgPerfil2: {
@@ -87,9 +93,14 @@ const estilos = StyleSheet.create({
         marginHorizontal: 30,
         marginTop: 15,
         borderRadius: 10,
-        borderColor: "#535353",
-        borderWidth: 1,
+        borderColor: "#cacaca",
+        borderWidth: 0,
         gap: 10,
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
     },
 
     areaNome: {
@@ -117,8 +128,9 @@ const estilos = StyleSheet.create({
     },
 
     linha: {
-        height: 2,
+        height: 1,
         width: "100%",
         backgroundColor: '#bbbaba',
+
     },
 });
