@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
     View,
     Text,
@@ -37,6 +39,7 @@ const abas = ["Todas", "Conforme", "Com pendência"];
 
 export default function Listagem() {
     const [tabAtiva, setTabAtiva] = useState("Todas");
+    const navigation = useNavigation<any>();
 
     const inspecoesFiltradas = inspecoes.filter((item) => {
         if (tabAtiva === "Todas") return true;
@@ -50,7 +53,8 @@ export default function Listagem() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Text style={styles.titulo}>Inspeções</Text>
 
-                <TouchableOpacity style={styles.botaoNova}>
+                <TouchableOpacity style={styles.botaoNova}
+                onPress={() => navigation.navigate("CriarInspecao")}>
                     <Text style={styles.botaoNovaTexto}>+ Nova inspeção</Text>
                 </TouchableOpacity>
 
@@ -76,6 +80,7 @@ export default function Listagem() {
 
                 {inspecoesFiltradas.map((item) => (
                     <TouchableOpacity
+                    onPress={() => navigation.navigate("Detalhes")} //nao esta localizando pelo id, so pega o primeiro
                         key={item.id}
                         style={[
                             styles.card,
@@ -140,7 +145,6 @@ export default function Listagem() {
                     </TouchableOpacity>
                 ))}
             </ScrollView>
-
             <BottomNavBar />
         </View>
     );

@@ -48,17 +48,14 @@ export default function BottomNavBar({
                 <Feather
                     name="user"
                     size={22}
-                    color={active === "Perfil" 
-                        ? "#006EFF" 
-                        : "#999"
-                    }
+                    color={active === "perfil" ? "#006EFF" : "#999"}
                 />
                 <Text
                     style={[
                         styles.tabLabel,
                         {
                             color:
-                                active === "Perfil"
+                                active === "perfil"
                                     ? "#006EFF"
                                     : "#999",
                         },
