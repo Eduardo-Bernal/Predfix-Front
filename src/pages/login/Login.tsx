@@ -184,7 +184,7 @@ export default function TelaLogin() {
 const estilos = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F6FA',
   },
 
   conteudo: {

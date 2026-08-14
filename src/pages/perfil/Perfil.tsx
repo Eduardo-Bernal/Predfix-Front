@@ -45,6 +45,7 @@ const estilos = StyleSheet.create({
         flex: 1,
         flexDirection: "column",
         justifyContent: "space-between",
+        backgroundColor: "#F5F6FA"
     },
 
     cabecalho: {

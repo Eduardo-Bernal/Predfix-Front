@@ -287,7 +287,7 @@ export default function CriarInspecao() {
 
 const estilos = StyleSheet.create({
     container: {
-        backgroundColor: "#F8F7FF",
+        backgroundColor: "#F5F6FA",
         // flex: 1,
         justifyContent: "center",
         alignItems: "center",
