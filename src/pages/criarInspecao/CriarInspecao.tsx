@@ -301,7 +301,7 @@ const estilos = StyleSheet.create({
         width: "100%",
         padding: 20,
         height: 430,
-        borderRadius: 5,
+        borderRadius: 10,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,
     },
@@ -317,7 +317,7 @@ const estilos = StyleSheet.create({
         borderColor: "#rgba(93, 101, 116, 0.8)",
         fontSize: 20,
         borderWidth: 1,
-        borderRadius: 5,
+        borderRadius: 10,
         width: "100%",
         height: 60,
         padding: 5,
@@ -342,7 +342,7 @@ const estilos = StyleSheet.create({
 
         borderWidth: 2,
         borderColor: "#C5C9D8",
-        borderRadius: 5,
+        borderRadius: 10,
 
         backgroundColor: "#FFFFFF",
 
@@ -386,7 +386,7 @@ const estilos = StyleSheet.create({
         width: "100%",
         padding: 20,
         height: 360,
-        borderRadius: 4,
+        borderRadius: 10,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,
     },
@@ -412,7 +412,7 @@ const estilos = StyleSheet.create({
         margin: 10,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 4,
+        borderRadius: 10,
         alignSelf: "center",
     },
 
@@ -448,7 +448,7 @@ const estilos = StyleSheet.create({
         width: 370,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 4,
+        borderRadius: 10,
         marginTop: 30
     },
 
