@@ -8,10 +8,13 @@ import {
 } from "expo-audio";
 
 import BottomNavBar from "../components/bottomNavBar";
+import { useNavigation } from "@react-navigation/native";
 
 
 export default function Detalhes() {
 
+  const navigation = useNavigation<any>();
+  
   const player = useAudioPlayer(
     require("../../../assets/audio.mp3")
   );
@@ -54,7 +57,9 @@ export default function Detalhes() {
     <View style={estilos.tudo}>
 
       <View style={estilos.cabecalho}>
-        <Ionicons name="arrow-back" size={32} color="blue" />
+        <TouchableOpacity onPress={() => navigation.navigate("Listagem")}>
+          <Ionicons name="arrow-back" size={32} color="blue" />
+        </TouchableOpacity>
         <Text style={estilos.titulo_cabecalho}> PrediFix </Text>
         <Ionicons name="share-outline" size={32} color="blue" />
       </View>
