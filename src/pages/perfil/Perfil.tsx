@@ -6,10 +6,6 @@ export default function Perfil() {
     return (
         <View style={estilos.container}>
             <View>
-                <View style={estilos.cabecalho}>
-                    <Image source={require('../../../assets/Text.png')} style={estilos.imgLogo} />
-                    <Image source={require('../../../assets/perfil.png')} style={estilos.imgPerfil1} />
-                </View>
                 <View style={estilos.linha}></View>
                 <View>
                     <Text style={estilos.text1}>Perfil</Text>
@@ -30,7 +26,7 @@ export default function Perfil() {
                 </View>
                 
             </View>
-            <BottomNavBar />
+            <BottomNavBar active={"Perfil"} />
         </View>
         
     )
