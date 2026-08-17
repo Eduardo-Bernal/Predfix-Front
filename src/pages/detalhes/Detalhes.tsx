@@ -116,11 +116,6 @@ export default function Detalhes() {
 </View>
 
 
-<TouchableOpacity style={estilos.botaoNovo}>
-    <Ionicons name="pencil" size={22} color="white" />
-  <Text style={estilos.textoBotaoNovo}> Editar Inspeção </Text>
-</TouchableOpacity>
-
       </ScrollView>
             
       <BottomNavBar />
