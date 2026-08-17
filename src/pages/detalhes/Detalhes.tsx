@@ -129,7 +129,7 @@ const estilos = StyleSheet.create({
 
   tudo: {
     flex: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#F5F6FA",
     width: "100%",
   },
 

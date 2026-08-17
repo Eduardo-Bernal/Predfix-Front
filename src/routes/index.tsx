@@ -1,6 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import "../pages/perfil/Perfil"
 import { RootStackParamList } from "./types";
 import React from "react";
 import Login from "../pages/login/Login";
