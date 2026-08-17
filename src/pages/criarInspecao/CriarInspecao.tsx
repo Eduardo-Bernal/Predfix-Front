@@ -309,7 +309,8 @@ const estilos = StyleSheet.create({
     label: {
         fontWeight: "bold",
         color: "#rgba(93, 101, 116, 1)",
-        fontSize: 20
+        fontSize: 20,
+        marginBottom: 10,
     },
 
     input: {
