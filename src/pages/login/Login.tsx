@@ -11,12 +11,16 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Listagem from '../listagem/Listagem';
+import { autenticacaoService } from '../../services/autenticacaoService';
+import { useRouter } from 'expo-router';
 
 export default function TelaLogin() {
+
   const navigation = useNavigation<any>();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -43,6 +47,25 @@ export default function TelaLogin() {
   };
 
   const temErro = Boolean(mensagemErro);
+
+
+  async function acessar() {
+    
+      const emailDigitado = email.trim();
+      const senhaDigitado = senha.trim();
+
+      if(!emailDigitado || !senhaDigitado){
+        Alert.alert("ATENÇÃO", "preencha todos os campos.");
+        return;
+      }
+
+      try {
+        await autenticacaoService.login({email: emailDigitado, senha: senhaDigitado})
+        navigation.navigate("Listagem")
+      } catch(error) {
+        Alert.alert("Erro", "E-mail ou senha incorretos");
+      }
+    }
 
   return (
     <SafeAreaView style={estilos.container}>
@@ -170,7 +193,7 @@ export default function TelaLogin() {
             <TouchableOpacity
               style={estilos.botaoEntrar}
               activeOpacity={0.8}
-              onPress={() => navigation.navigate("Listagem")}
+              onPress={acessar}
             >
               <Text style={estilos.textoBotao}>Entrar</Text>
             </TouchableOpacity>
