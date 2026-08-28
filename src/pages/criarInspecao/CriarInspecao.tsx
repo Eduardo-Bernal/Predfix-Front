@@ -287,7 +287,7 @@ export default function CriarInspecao() {
 
 const estilos = StyleSheet.create({
     container: {
-        backgroundColor: "#F8F7FF",
+        backgroundColor: "#F5F6FA",
         // flex: 1,
         justifyContent: "center",
         alignItems: "center",
@@ -309,7 +309,8 @@ const estilos = StyleSheet.create({
     label: {
         fontWeight: "bold",
         color: "#rgba(93, 101, 116, 1)",
-        fontSize: 20
+        fontSize: 20,
+        marginBottom: 10,
     },
 
     input: {
@@ -342,7 +343,7 @@ const estilos = StyleSheet.create({
 
         borderWidth: 2,
         borderColor: "#C5C9D8",
-        borderRadius: 5,
+        borderRadius: 10,
 
         backgroundColor: "#FFFFFF",
 
