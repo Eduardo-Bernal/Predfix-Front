@@ -1,21 +1,60 @@
-import { View, Text, TextInput, Alert, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, Alert, Pressable, ScrollView } from "react-native";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import React, { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import { estilos } from "./criarInspecao.styles";
+import { AdicionarInspecao, ObservacaoUpload } from "../../@types/criarInspecao";
+import useInspecao from "../../hooks/useInspecao";
 
 
 export default function CriarInspecao() {
 
-    const [situacao, setSituacao] = useState<"conforme" | "pendencia" | null>(null);
+    const { adicionarInspecao } = useInspecao();
 
+    // data para forms
+    const [equipamento, setEquipamento] = useState("");
+    const [localizacao, setLocalizacao] = useState("");
+    const [cliente, setCliente] = useState("");
+    const [situacao, setSituacao] = useState<"conforme" | "pendencia" | null>(null);
+    // aqui e nulo so na hora de criar uma nova inspecao
+    const [observacao, setObservacao] = useState<ObservacaoUpload | null>(null)
+
+    async function handleSave() {
+        if (!equipamento.trim() || !localizacao.trim() || !cliente.trim() || !situacao || !observacao) {
+            Alert.alert("⚠ Atenção", "Preencha todos os campos obrigatórios (*).")
+            return;
+        }
+
+        const novaInspecao: AdicionarInspecao = {
+            equipamento: equipamento,
+            localizacao: localizacao,
+            cliente: cliente,
+            statusInspecao: situacao === "conforme",
+            observacao: observacao
+        }
+
+        const sucesso = await adicionarInspecao(novaInspecao);
+
+        if (sucesso) {
+            setEquipamento("")
+            setLocalizacao("")
+            setCliente("")
+            setSituacao(null)
+            setObservacao(null)
+
+            Alert.alert("Cadastro realizado!", "Inspeção salva com sucesso!");
+        }
+    }
+
+    // uso do recurso nativo Microfone
     const audioRecorder = useAudioRecorder(
         RecordingPresets.HIGH_QUALITY
     );
 
     const recorderState = useAudioRecorderState(audioRecorder);
 
-    // Solicita permissão para utilizar o microfone
+    // solicita permissão para utilizar o microfone
     useEffect(() => {
         async function configurarAudio() {
 
@@ -40,7 +79,7 @@ export default function CriarInspecao() {
         configurarAudio();
     }, []);
 
-    // Começa a gravação
+    // começa a gravação
     async function iniciarGravacao() {
         try {
             await audioRecorder.prepareToRecordAsync();
@@ -57,12 +96,24 @@ export default function CriarInspecao() {
         }
     }
 
-    // Para a gravação
+    // para a gravação
     async function pararGravacao() {
         try {
             await audioRecorder.stop();
 
+            const uri = audioRecorder.uri;
+
             console.log("Áudio:", audioRecorder.uri);
+
+            if (uri) {
+                const audio: ObservacaoUpload = {
+                    uri: uri,
+                    name: `observacao_${Date.now()}.m4a`,
+                    mimeType: "audio/mp4",
+                };
+
+                setObservacao(audio);
+            }
 
             Alert.alert(
                 "Áudio gravado",
@@ -79,7 +130,7 @@ export default function CriarInspecao() {
         }
     }
 
-    // Decide se inicia ou para
+    // decide se inicia ou para
     async function controlarGravacao() {
 
         if (recorderState.isRecording) {
@@ -89,22 +140,22 @@ export default function CriarInspecao() {
         }
     }
 
-    function salvarInspecao() {
-        if (!audioRecorder.uri) {
-            Alert.alert(
-                "Áudio obrigatório",
-            );
+    // function salvarInspecao() {
+    //     if (!audioRecorder.uri) {
+    //         Alert.alert(
+    //             "Áudio obrigatório",
+    //         );
 
-            return;
-        }
-    }
+    //         return;
+    //     }
+    // }
 
     return (
         <>
-        {/* statusBar */}
-            <StatusBar hidden/>
+            {/* statusBar */}
+            <StatusBar hidden />
 
-        {/* tela inteira */}
+            {/* tela inteira */}
             <ScrollView
                 contentContainerStyle={estilos.container}
                 showsVerticalScrollIndicator={false}
@@ -112,30 +163,36 @@ export default function CriarInspecao() {
 
                 {/* forms */}
                 <View style={estilos.forms}>
-                    <Text style={estilos.label}>EQUIPAMENTO</Text>
+                    <Text style={estilos.label}>EQUIPAMENTO *</Text>
                     <TextInput
                         placeholder="Ex: Bomba Hidráulica BH-01"
                         placeholderTextColor={"#5D6574"}
                         style={estilos.input}
+                        onChangeText={setEquipamento}
+                        value={equipamento}
                     ></TextInput>
 
-                    <Text style={estilos.label}>LOCAL</Text>
+                    <Text style={estilos.label}>LOCAL *</Text>
                     <TextInput
                         placeholder="Ex: Setor Sul"
                         placeholderTextColor={"#5D6574"}
                         style={estilos.input}
+                        onChangeText={setLocalizacao}
+                        value={localizacao}
                     ></TextInput>
 
-                    <Text style={estilos.label}>CLIENTE</Text>
+                    <Text style={estilos.label}>CLIENTE *</Text>
                     <TextInput
                         placeholder="Ex: Cliente Alpha"
                         placeholderTextColor={"#5D6574"}
                         style={estilos.input}
+                        onChangeText={setCliente}
+                        value={cliente}
                     ></TextInput>
 
 
 
-                    <Text style={estilos.label}>SITUAÇÃO</Text>
+                    <Text style={estilos.label}>SITUAÇÃO *</Text>
                     <View style={estilos.botoesSituacao}>
 
                         {/* Conforme */}
@@ -273,7 +330,7 @@ export default function CriarInspecao() {
                 <View>
                     <Pressable
                         style={estilos.botaoSalvar}
-                        onPress={salvarInspecao}
+                        onPress={handleSave}
                     >
                         <Text style={estilos.textoSalvar}>
                             Salvar inspeção
@@ -284,178 +341,3 @@ export default function CriarInspecao() {
         </>
     )
 }
-
-const estilos = StyleSheet.create({
-    container: {
-        backgroundColor: "#F5F6FA",
-        // flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-        // height: "100%"
-    },
-
-    forms: {
-        backgroundColor: "white",
-        margin: 10,
-        width: "100%",
-        padding: 20,
-        height: 430,
-        borderRadius: 10,
-        borderColor: "#rgba(93, 101, 116, 0.5)",
-        borderWidth: 1,
-    },
-
-    label: {
-        fontWeight: "bold",
-        color: "#rgba(93, 101, 116, 1)",
-        fontSize: 20,
-        marginBottom: 10,
-    },
-
-    input: {
-        backgroundColor: "#F8F7FF",
-        borderColor: "#rgba(93, 101, 116, 0.8)",
-        fontSize: 20,
-        borderWidth: 1,
-        borderRadius: 10,
-        width: "100%",
-        height: 60,
-        padding: 5,
-        marginBottom: 10
-
-    },
-
-    situacaoContainer: {
-        marginTop: 15,
-    },
-
-    botoesSituacao: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        gap: 12,
-    },
-
-    botaoSituacao: {
-        flex: 1,
-        height: 60,
-        // width: "100%",
-
-        borderWidth: 2,
-        borderColor: "#C5C9D8",
-        borderRadius: 10,
-
-        backgroundColor: "#FFFFFF",
-
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-
-        gap: 10,
-    },
-
-    botaoConformeAtivo: {
-        backgroundColor: "#DFF3E4",
-        borderColor: "#219653",
-    },
-
-    botaoPendenciaAtivo: {
-        backgroundColor: "#FFF3CD",
-        borderColor: "#E0A800",
-    },
-
-    iconeSituacao: {
-        fontSize: 30,
-        color: "#777D8C",
-        fontWeight: "500",
-    },
-
-    textoSituacao: {
-        fontSize: 20,
-        fontWeight: "500",
-        color: "#777D8C",
-        textAlign: "center",
-    },
-
-    textoAtivo: {
-        color: "black",
-    },
-
-    formAudio: {
-        backgroundColor: "#FFFFFF",
-        margin: 10,
-        width: "100%",
-        padding: 20,
-        height: 360,
-        borderRadius: 10,
-        borderColor: "#rgba(93, 101, 116, 0.5)",
-        borderWidth: 1,
-    },
-
-    tituloAudio: {
-        fontWeight: "bold",
-        fontSize: 25,
-    },
-
-    textoAudio: {
-        fontSize: 20
-    },
-
-    obrigatorio: {
-        color: "#BA0D0D",
-        fontSize: 20
-    },
-
-    botaoAudio: {
-        backgroundColor: "#003D9B",
-        width: 200,
-        height: 200,
-        margin: 10,
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 10,
-        alignSelf: "center",
-    },
-
-    icone: {
-        color: "white",
-        fontSize: 60
-    },
-
-    textoBotao: {
-        color: "white",
-        fontSize: 20,
-        paddingTop: 10
-    },
-
-    tempo: {
-        color: "white",
-        fontSize: 20
-    },
-
-    botaoGravando: {
-        backgroundColor: "#BA0D0D"
-    },
-
-    botaoGravado: {
-        backgroundColor: "green"
-    },
-
-    botaoInicial: {},
-
-    botaoSalvar: {
-        backgroundColor: "#003D9B",
-        height: 60,
-        width: 360,
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 10,
-        marginTop: 30
-    },
-
-    textoSalvar: {
-        color: "white",
-        fontWeight: "bold",
-        fontSize: 20
-    }
-})
