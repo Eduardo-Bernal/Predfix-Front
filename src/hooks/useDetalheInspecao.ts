@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Inspecao } from "../@types/inspecao";
+import { InspecaoApi } from "../@types/inspecao";
 import { inspecaoService } from "../services/inspecaoService";
 
 export function useDetalheInspecao(id: number) {
-  const [inspecao, setInspecao] = useState<Inspecao | null>(null);
+  const [inspecao, setInspecao] = useState<InspecaoApi | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
 
@@ -17,7 +17,7 @@ export function useDetalheInspecao(id: number) {
 
         setInspecao(dados);
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao carregar inspeção:", error);
         setErro("Não foi possível carregar a inspeção.");
       } finally {
         setCarregando(false);

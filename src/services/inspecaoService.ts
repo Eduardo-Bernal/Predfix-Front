@@ -1,9 +1,10 @@
-import { Inspecao } from "../@types/inspecao";
+import { InspecaoApi } from "../@types/inspecao";
 import { api } from "./api";
 
 export const inspecaoService = {
-  async buscarPorId(id: number): Promise<Inspecao> {
-    const resposta = await api.get<Inspecao>(`Inspecao/${id}`);
+  async buscarPorId(id: number): Promise<InspecaoApi> {
+    const resposta = await api.get<InspecaoApi>(`/Inspecao/${id}`);
+
     return resposta.data;
   },
 

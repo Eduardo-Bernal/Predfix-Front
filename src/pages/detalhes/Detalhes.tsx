@@ -1,200 +1,287 @@
-import React, { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import React from "react";
+
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+
+import { Ionicons } from "@expo/vector-icons";
+
+import {
+  useAudioPlayer,
+  useAudioPlayerStatus,
+} from "expo-audio";
+
 import BottomNavBar from "../components/bottomNavBar";
-import { useNavigation } from "@react-navigation/native";
 
-const inspecoes = [
-  {
-    id: 1,
-    titulo: "Elevador Social",
-    local: "Condomínio Solar",
-    data: "25/10/2023 10:30",
-    status: "pendencia",
-  },
-  {
-    id: 2,
-    titulo: "Extintor PQS",
-    local: "Empresa Tech",
-    data: "24/10/2023 14:15",
-    status: "conforme",
-  },
-  {
-    id: 3,
-    titulo: "Gerador Principal",
-    local: "Hospital Central",
-    data: "23/10/2023 09:00",
-    status: "conforme",
-  },
-];
+import { RootStackParamList } from "../../routes/types";
+import { useDetalheInspecao } from "../../hooks/useDetalheInspecao";
+import { inspecaoService } from "../../services/inspecaoService";
 
-const abas = ["Todas", "Conforme", "Com pendência"];
-
-export default function Listagem() {
-  const [tabAtiva, setTabAtiva] = useState("Todas");
+export default function Detalhes() {
   const navigation = useNavigation<any>();
 
-  const inspecoesFiltradas = inspecoes.filter((item) => {
-    if (tabAtiva === "Todas") {
-      return true;
+  const route =
+    useRoute<RouteProp<RootStackParamList, "Detalhes">>();
+
+  const { id } = route.params;
+
+  const {
+    inspecao,
+    carregando,
+    erro,
+    dataFormatada,
+  } = useDetalheInspecao(id);
+
+  const audioUrl = inspecaoService.obterUrlAudio(id);
+
+  const player = useAudioPlayer(audioUrl);
+  const status = useAudioPlayerStatus(player);
+
+  const tocarAudio = () => {
+    if (status.playing) {
+      player.pause();
+    } else {
+      player.play();
+    }
+  };
+
+  const formatarTempo = (segundos: number) => {
+    if (!segundos) {
+      return "00:00";
     }
 
-    if (tabAtiva === "Conforme") {
-      return item.status === "conforme";
-    }
+    const minutos = Math.floor(segundos / 60);
+    const segundosRestantes = Math.floor(segundos % 60);
 
-    if (tabAtiva === "Com pendência") {
-      return item.status === "pendencia";
-    }
+    return `${String(minutos).padStart(2, "0")}:${String(
+      segundosRestantes
+    ).padStart(2, "0")}`;
+  };
 
-    return true;
-  });
+  const progresso =
+    status.duration > 0
+      ? (status.currentTime / status.duration) * 100
+      : 0;
+
+  if (carregando) {
+    return (
+      <View style={styles.estadoContainer}>
+        <ActivityIndicator
+          size="large"
+          color="#0D2B6B"
+        />
+
+        <Text style={styles.textoCarregando}>
+          Carregando inspeção...
+        </Text>
+      </View>
+    );
+  }
+
+  if (erro || !inspecao) {
+    return (
+      <View style={styles.estadoContainer}>
+        <Ionicons
+          name="alert-circle-outline"
+          size={42}
+          color="#E53935"
+        />
+
+        <Text style={styles.textoErro}>
+          {erro || "Inspeção não encontrada."}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.botaoVoltarErro}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.textoBotaoVoltar}>
+            Voltar
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const pendencia = inspecao.statusInspecao;
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.titulo}>Inspeções</Text>
-
-        <TouchableOpacity
-          style={styles.botaoNova}
-          onPress={() => navigation.navigate("CriarInspecao")}
-        >
-          <Text style={styles.botaoNovaTexto}>
-            + Nova inspeção
-          </Text>
+      <View style={styles.cabecalho}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons
+            name="arrow-back"
+            size={28}
+            color="#0D2B6B"
+          />
         </TouchableOpacity>
 
-        <View style={styles.tabs}>
-          {abas.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setTabAtiva(tab)}
-              style={styles.tabItem}
-            >
-              <Text
-                style={[
-                  styles.tabTexto,
-                  tabAtiva === tab && styles.tabTextoAtiva,
-                ]}
-              >
-                {tab}
-              </Text>
+        <Text style={styles.tituloCabecalho}>
+          Detalhes
+        </Text>
 
-              {tabAtiva === tab && (
-                <View style={styles.tabIndicador} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
+        <View style={{ width: 28 }} />
+      </View>
 
-        {inspecoesFiltradas.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() =>
-              navigation.navigate("Detalhes", {
-                id: item.id,
-              })
+      <ScrollView contentContainerStyle={styles.conteudo}>
+        <Text style={styles.titulo}>
+          {inspecao.equipamento}
+        </Text>
+
+        <View
+          style={[
+            styles.status,
+            {
+              backgroundColor: pendencia
+                ? "#FDECEA"
+                : "#E6F4EA",
+            },
+          ]}
+        >
+          <Ionicons
+            name={
+              pendencia
+                ? "warning-outline"
+                : "checkmark-circle-outline"
             }
+            size={16}
+            color={
+              pendencia
+                ? "#E53935"
+                : "#2E7D32"
+            }
+          />
+
+          <Text
             style={[
-              styles.card,
+              styles.statusTexto,
               {
-                borderLeftColor:
-                  item.status === "pendencia"
-                    ? "#E53935"
-                    : "#2E7D32",
+                color: pendencia
+                  ? "#E53935"
+                  : "#2E7D32",
               },
             ]}
           >
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitulo}>
-                {item.titulo}
+            {inspecao.statusTexto}
+          </Text>
+        </View>
+
+        <View style={styles.cardInfo}>
+          <View style={styles.linhaInfo}>
+            <Ionicons
+              name="location-outline"
+              size={20}
+              color="#757575"
+            />
+
+            <View style={styles.textosInfo}>
+              <Text style={styles.rotulo}>
+                Localização
               </Text>
 
-              <View
-                style={[
-                  styles.badge,
-                  {
-                    backgroundColor:
-                      item.status === "pendencia"
-                        ? "#FDECEA"
-                        : "#E6F4EA",
-                  },
-                ]}
-              >
-                <Ionicons
-                  name={
-                    item.status === "pendencia"
-                      ? "warning-outline"
-                      : "checkmark-circle-outline"
-                  }
-                  size={14}
-                  color={
-                    item.status === "pendencia"
-                      ? "#E53935"
-                      : "#2E7D32"
-                  }
-                />
+              <Text style={styles.valor}>
+                {inspecao.localizacao}
+              </Text>
+            </View>
+          </View>
 
-                <Text
+          <View style={styles.separador} />
+
+          <View style={styles.linhaInfo}>
+            <Ionicons
+              name="business-outline"
+              size={20}
+              color="#757575"
+            />
+
+            <View style={styles.textosInfo}>
+              <Text style={styles.rotulo}>
+                Cliente
+              </Text>
+
+              <Text style={styles.valor}>
+                {inspecao.cliente}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.separador} />
+
+          <View style={styles.linhaInfo}>
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color="#757575"
+            />
+
+            <View style={styles.textosInfo}>
+              <Text style={styles.rotulo}>
+                Data
+              </Text>
+
+              <Text style={styles.valor}>
+                {dataFormatada}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.cardAudio}>
+          <Text style={styles.tituloObservacao}>
+            OBSERVAÇÃO DO TÉCNICO
+          </Text>
+
+          <View style={styles.areaAudio}>
+            <TouchableOpacity
+              style={styles.botaoPlay}
+              onPress={tocarAudio}
+            >
+              <Ionicons
+                name={
+                  status.playing
+                    ? "pause"
+                    : "play"
+                }
+                size={30}
+                color="#FFFFFF"
+              />
+            </TouchableOpacity>
+
+            <View style={styles.audioInfo}>
+              <View style={styles.barraAudio}>
+                <View
                   style={[
-                    styles.badgeTexto,
+                    styles.progressoAudio,
                     {
-                      color:
-                        item.status === "pendencia"
-                          ? "#E53935"
-                          : "#2E7D32",
+                      width: `${progresso}%`,
                     },
                   ]}
-                >
-                  {item.status === "pendencia"
-                    ? "Pendência"
-                    : "Conforme"}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.linha}>
-              <Ionicons
-                name="location-outline"
-                size={14}
-                color="#757575"
-              />
-
-              <Text style={styles.textoSecundario}>
-                {item.local}
-              </Text>
-            </View>
-
-            <View style={styles.separador} />
-
-            <View style={styles.linhaData}>
-              <View style={styles.linha}>
-                <MaterialCommunityIcons
-                  name="calendar-blank-outline"
-                  size={14}
-                  color="#757575"
                 />
-
-                <Text style={styles.textoSecundario}>
-                  {item.data}
-                </Text>
               </View>
 
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color="#BDBDBD"
-              />
+              <View style={styles.tempos}>
+                <Text style={styles.tempo}>
+                  {formatarTempo(status.currentTime)}
+                </Text>
+
+                <Text style={styles.tempo}>
+                  {formatarTempo(status.duration)}
+                </Text>
+              </View>
             </View>
-          </TouchableOpacity>
-        ))}
+          </View>
+        </View>
       </ScrollView>
 
       <BottomNavBar />
@@ -208,127 +295,175 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F6FA",
   },
 
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 24,
+  cabecalho: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+  },
+
+  tituloCabecalho: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1A1A1A",
+  },
+
+  conteudo: {
+    padding: 16,
+    paddingBottom: 120,
   },
 
   titulo: {
     fontSize: 26,
     fontWeight: "800",
     color: "#1A1A1A",
-    marginBottom: 16,
+    marginBottom: 12,
   },
 
-  botaoNova: {
-    backgroundColor: "#0D2B6B",
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-
-  botaoNovaTexto: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-
-  tabs: {
+  status: {
+    alignSelf: "flex-start",
     flexDirection: "row",
-    marginBottom: 16,
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 5,
+    marginBottom: 20,
   },
 
-  tabItem: {
-    marginRight: 24,
-    paddingBottom: 8,
-  },
-
-  tabTexto: {
-    fontSize: 14,
-    color: "#9E9E9E",
-    fontWeight: "500",
-  },
-
-  tabTextoAtiva: {
-    color: "#0D2B6B",
+  statusTexto: {
+    fontSize: 13,
     fontWeight: "700",
   },
 
-  tabIndicador: {
-    marginTop: 6,
-    height: 2,
-    backgroundColor: "#0D2B6B",
-    borderRadius: 1,
-  },
-
-  card: {
+  cardInfo: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
-    borderLeftWidth: 4,
-    padding: 14,
-    marginBottom: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    padding: 16,
+    marginBottom: 16,
     elevation: 2,
   },
 
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-
-  cardTitulo: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#1A1A1A",
-    flexShrink: 1,
-  },
-
-  badge: {
+  linhaInfo: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-    gap: 4,
   },
 
-  badgeTexto: {
+  textosInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+
+  rotulo: {
     fontSize: 12,
+    color: "#9E9E9E",
+    marginBottom: 3,
+  },
+
+  valor: {
+    fontSize: 15,
+    color: "#333333",
     fontWeight: "600",
-    marginLeft: 4,
-  },
-
-  linha: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-
-  textoSecundario: {
-    fontSize: 13,
-    color: "#757575",
-    marginLeft: 6,
   },
 
   separador: {
     height: 1,
     backgroundColor: "#EEEEEE",
-    marginVertical: 10,
+    marginVertical: 14,
   },
 
-  linhaData: {
+  cardAudio: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    elevation: 2,
+  },
+
+  tituloObservacao: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1A1A1A",
+    marginBottom: 20,
+  },
+
+  areaAudio: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  botaoPlay: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "#0D2B6B",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  audioInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+
+  barraAudio: {
+    height: 7,
+    borderRadius: 10,
+    backgroundColor: "#E5E7EB",
+    overflow: "hidden",
+  },
+
+  progressoAudio: {
+    height: "100%",
+    backgroundColor: "#0D2B6B",
+  },
+
+  tempos: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: 8,
+  },
+
+  tempo: {
+    fontSize: 12,
+    color: "#757575",
+  },
+
+  estadoContainer: {
+    flex: 1,
+    backgroundColor: "#F5F6FA",
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 30,
+  },
+
+  textoCarregando: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#757575",
+  },
+
+  textoErro: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#E53935",
+    textAlign: "center",
+  },
+
+  botaoVoltarErro: {
+    marginTop: 20,
+    backgroundColor: "#0D2B6B",
+    paddingHorizontal: 24,
+    paddingVertical: 11,
+    borderRadius: 8,
+  },
+
+  textoBotaoVoltar: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

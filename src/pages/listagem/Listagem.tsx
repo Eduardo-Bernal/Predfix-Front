@@ -1,39 +1,18 @@
-import React, { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useCallback, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
     View,
     Text,
     ScrollView,
     TouchableOpacity,
     StyleSheet,
+    ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomNavBar from "../components/bottomNavBar";
-
-const inspecoes = [
-    {
-        id: 1,
-        titulo: "Elevador Social",
-        local: "Condomínio Solar",
-        data: "25/10/2023 10:30",
-        status: "pendencia",
-    },
-    {
-        id: 2,
-        titulo: "Extintor PQS",
-        local: "Empresa Tech",
-        data: "24/10/2023 14:15",
-        status: "conforme",
-    },
-    {
-        id: 3,
-        titulo: "Gerador Principal",
-        local: "Hospital Central",
-        data: "23/10/2023 09:00",
-        status: "conforme",
-    },
-];
+import { api } from "../../services/api";
+import {InspecaoApi} from "../../@types/inspecao"
+import {buscarInspecoes} from "../../services/inspecao"
 
 const abas = ["Todas", "Conforme", "Com pendência"];
 
@@ -49,114 +28,179 @@ function formatarData(dataIso: string) {
 
 export default function Listagem() {
     const [tabAtiva, setTabAtiva] = useState("Todas");
+    const [inspecoes, setInspecoes] = useState<InspecaoApi[]>([]);
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState(false);
     const navigation = useNavigation<any>();
+
+    const carregarInspecoes = useCallback(async () => {
+        setCarregando(true);
+        setErro(false);
+        try {
+            const dados = await buscarInspecoes();
+            setInspecoes(dados);
+        } catch (error) {
+            console.log("Erro ao buscar inspeções:", error);
+            setErro(true);
+        } finally {
+            setCarregando(false);
+        }
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            carregarInspecoes();
+        }, [carregarInspecoes])
+    );
 
     const inspecoesFiltradas = inspecoes.filter((item) => {
         if (tabAtiva === "Todas") return true;
-        if (tabAtiva === "Conforme") return item.status === "conforme";
-        if (tabAtiva === "Com pendência") return item.status === "pendencia";
+        if (tabAtiva === "Conforme") return item.statusInspecao === false;
+        if (tabAtiva === "Com pendência") return item.statusInspecao === true;
         return true;
     });
 
-  return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.titulo}>Inspeções</Text>
+    return (
+        <View style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.titulo}>Inspeções</Text>
 
-                <TouchableOpacity style={styles.botaoNova}
-                onPress={() => navigation.navigate("CriarInspecao")}>
+                <TouchableOpacity
+                    style={styles.botaoNova}
+                    onPress={() => navigation.navigate("CriarInspecao")}
+                >
                     <Text style={styles.botaoNovaTexto}>+ Nova inspeção</Text>
                 </TouchableOpacity>
 
-        <View style={styles.tabs}>
-          {abas.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setTabAtiva(tab)}
-              style={styles.tabItem}
-            >
-              <Text
-                style={[
-                  styles.tabTexto,
-                  tabAtiva === tab && styles.tabTextoAtiva,
-                ]}
-              >
-                {tab}
-              </Text>
-
-              {tabAtiva === tab && (
-                <View style={styles.tabIndicador} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-
-                {inspecoesFiltradas.map((item) => (
-                    <TouchableOpacity
-                    onPress={() => navigation.navigate("Detalhes")} //nao esta localizando pelo id, so pega o primeiro
-                        key={item.id}
-                        style={[
-                            styles.card,
-                            {
-                                borderLeftColor:
-                                    item.status === "pendencia" ? "#E53935" : "#2E7D32",
-                            },
-                        ]}
-                    >
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitulo}>{item.titulo}</Text>
-                            <View
+                <View style={styles.tabs}>
+                    {abas.map((tab) => (
+                        <TouchableOpacity
+                            key={tab}
+                            onPress={() => setTabAtiva(tab)}
+                            style={styles.tabItem}
+                        >
+                            <Text
                                 style={[
-                                    styles.badge,
-                                    {
-                                        backgroundColor:
-                                            item.status === "pendencia" ? "#FDECEA" : "#E6F4EA",
-                                    },
+                                    styles.tabTexto,
+                                    tabAtiva === tab && styles.tabTextoAtiva,
                                 ]}
                             >
-                                <Ionicons
-                                    name={
-                                        item.status === "pendencia"
-                                            ? "warning-outline"
-                                            : "checkmark-circle-outline"
-                                    }
-                                    size={14}
-                                    color={item.status === "pendencia" ? "#E53935" : "#2E7D32"}
-                                />
-                                <Text
+                                {tab}
+                            </Text>
+                            {tabAtiva === tab && <View style={styles.tabIndicador} />}
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {carregando && (
+                    <View style={styles.estadoContainer}>
+                        <ActivityIndicator size="large" color="#0D2B6B" />
+                        <Text style={styles.estadoTexto}>Carregando inspeções...</Text>
+                    </View>
+                )}
+
+                {!carregando && erro && (
+                    <View style={styles.estadoContainer}>
+                        <Ionicons name="alert-circle-outline" size={32} color="#E53935" />
+                        <Text style={styles.estadoTexto}>
+                            Não foi possível carregar as inspeções.
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.botaoTentarNovamente}
+                            onPress={buscarInspecoes}
+                        >
+                            <Text style={styles.botaoTentarNovamenteTexto}>
+                                Tentar novamente
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {!carregando && !erro && inspecoesFiltradas.length === 0 && (
+                    <View style={styles.estadoContainer}>
+                        <Text style={styles.estadoTexto}>
+                            Nenhuma inspeção encontrada.
+                        </Text>
+                    </View>
+                )}
+
+                {!carregando &&
+                    !erro &&
+                    inspecoesFiltradas.map((item) => (
+                        <TouchableOpacity
+                            key={item.inspecaoID}
+                            onPress={() =>
+                                navigation.navigate("Detalhes", { id: item.inspecaoID })
+                            }
+                            style={[
+                                styles.card,
+                                {
+                                    borderLeftColor: item.statusInspecao
+                                        ? "#E53935"
+                                        : "#2E7D32",
+                                },
+                            ]}
+                        >
+                            <View style={styles.cardHeader}>
+                                <Text style={styles.cardTitulo}>{item.equipamento}</Text>
+                                <View
                                     style={[
-                                        styles.badgeTexto,
+                                        styles.badge,
                                         {
-                                            color:
-                                                item.status === "pendencia" ? "#E53935" : "#2E7D32",
+                                            backgroundColor: item.statusInspecao
+                                                ? "#FDECEA"
+                                                : "#E6F4EA",
                                         },
                                     ]}
                                 >
-                                    {item.status === "pendencia" ? "Pendência" : "Conforme"}
+                                    <Ionicons
+                                        name={
+                                            item.statusInspecao
+                                                ? "warning-outline"
+                                                : "checkmark-circle-outline"
+                                        }
+                                        size={14}
+                                        color={item.statusInspecao ? "#E53935" : "#2E7D32"}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.badgeTexto,
+                                            {
+                                                color: item.statusInspecao
+                                                    ? "#E53935"
+                                                    : "#2E7D32",
+                                            },
+                                        ]}
+                                    >
+                                        {item.statusTexto}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.linha}>
+                                <Ionicons name="location-outline" size={14} color="#757575" />
+                                <Text style={styles.textoSecundario}>
+                                    {item.localizacao} • {item.cliente}
                                 </Text>
                             </View>
-                        </View>
 
-                        <View style={styles.linha}>
-                            <Ionicons name="location-outline" size={14} color="#757575" />
-                            <Text style={styles.textoSecundario}>{item.local}</Text>
-                        </View>
+                            <View style={styles.separador} />
 
-                        <View style={styles.separador} />
-
-                        <View style={styles.linhaData}>
-                            <View style={styles.linha}>
-                                <MaterialCommunityIcons
-                                    name="calendar-blank-outline"
-                                    size={14}
-                                    color="#757575"
-                                />
-                                <Text style={styles.textoSecundario}>{item.data}</Text>
+                            <View style={styles.linhaData}>
+                                <View style={styles.linha}>
+                                    <MaterialCommunityIcons
+                                        name="calendar-blank-outline"
+                                        size={14}
+                                        color="#757575"
+                                    />
+                                    <Text style={styles.textoSecundario}>
+                                        {formatarData(item.dataCriacao)}
+                                    </Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
                             </View>
-                            <Ionicons name="chevron-forward" size={18} color="#BDBDBD" />
-                        </View>
-                    </TouchableOpacity>
-                ))}
+                        </TouchableOpacity>
+                    ))}
             </ScrollView>
             <BottomNavBar />
         </View>
@@ -270,5 +314,28 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+    },
+    estadoContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 40,
+        gap: 8,
+    },
+    estadoTexto: {
+        fontSize: 14,
+        color: "#757575",
+        textAlign: "center",
+    },
+    botaoTentarNovamente: {
+        marginTop: 8,
+        backgroundColor: "#0D2B6B",
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+    },
+    botaoTentarNovamenteTexto: {
+        color: "#FFFFFF",
+        fontWeight: "700",
+        fontSize: 13,
     },
 });

@@ -1,4 +1,4 @@
-export type Inspecao = {
+export interface InspecaoApi {
   inspecaoID: number;
   equipamento: string;
   localizacao: string;
@@ -7,4 +7,4 @@ export type Inspecao = {
   statusTexto: string;
   dataCriacao: string;
   usuarioID: number;
-};
+}
