@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomNavBar from "../components/bottomNavBar";
+import { useNavigation } from "@react-navigation/native";
 
 const inspecoes = [
   {
