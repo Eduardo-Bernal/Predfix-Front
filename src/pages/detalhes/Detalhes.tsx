@@ -1,302 +1,333 @@
-import React from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-
+import React, { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
-  useAudioPlayer,
-  useAudioPlayerStatus,
-} from "expo-audio";
-
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomNavBar from "../components/bottomNavBar";
 
+const inspecoes = [
+  {
+    id: 1,
+    titulo: "Elevador Social",
+    local: "Condomínio Solar",
+    data: "25/10/2023 10:30",
+    status: "pendencia",
+  },
+  {
+    id: 2,
+    titulo: "Extintor PQS",
+    local: "Empresa Tech",
+    data: "24/10/2023 14:15",
+    status: "conforme",
+  },
+  {
+    id: 3,
+    titulo: "Gerador Principal",
+    local: "Hospital Central",
+    data: "23/10/2023 09:00",
+    status: "conforme",
+  },
+];
 
-export default function Detalhes() {
+const abas = ["Todas", "Conforme", "Com pendência"];
 
-  const player = useAudioPlayer(
-    require("../../../assets/audio.mp3")
-  );
+export default function Listagem() {
+  const [tabAtiva, setTabAtiva] = useState("Todas");
+  const navigation = useNavigation<any>();
 
-  const status = useAudioPlayerStatus(player);
-
-
-  const tocarAudio = () => {
-    if (status.playing) {
-      player.pause();
-    } else {
-      player.play();
+  const inspecoesFiltradas = inspecoes.filter((item) => {
+    if (tabAtiva === "Todas") {
+      return true;
     }
-  };
 
-
-  const formatarTempo = (segundos: number) => {
-    if (!segundos) {
-      return "00:00";
+    if (tabAtiva === "Conforme") {
+      return item.status === "conforme";
     }
 
-    const minutos = Math.floor(segundos / 60);
-    const segundosRestantes = Math.floor(segundos % 60);
+    if (tabAtiva === "Com pendência") {
+      return item.status === "pendencia";
+    }
 
-    return `${minutos
-      .toString()
-      .padStart(2, "0")}:${segundosRestantes
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-
-  const progresso =
-    status.duration > 0
-      ? (status.currentTime / status.duration) * 100
-      : 0;
-
+    return true;
+  });
 
   return (
-    <View style={estilos.tudo}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.titulo}>Inspeções</Text>
 
-      <View style={estilos.cabecalho}>
-        <Ionicons name="arrow-back" size={32} color="blue" />
-        <Text style={estilos.titulo_cabecalho}> PrediFix </Text>
-        <Ionicons name="share-outline" size={32} color="blue" />
-      </View>
+        <TouchableOpacity
+          style={styles.botaoNova}
+          onPress={() => navigation.navigate("CriarInspecao")}
+        >
+          <Text style={styles.botaoNovaTexto}>
+            + Nova inspeção
+          </Text>
+        </TouchableOpacity>
 
+        <View style={styles.tabs}>
+          {abas.map((tab) => (
+            <TouchableOpacity
+              key={tab}
+              onPress={() => setTabAtiva(tab)}
+              style={styles.tabItem}
+            >
+              <Text
+                style={[
+                  styles.tabTexto,
+                  tabAtiva === tab && styles.tabTextoAtiva,
+                ]}
+              >
+                {tab}
+              </Text>
 
-      <View style={estilos.linha} />
-
-
-      <ScrollView
-        style={estilos.conteudo}
-        contentContainerStyle={estilos.conteudoInterno}
-      >
-
-        <Text style={estilos.titulo}> Elevador Social </Text>
-
-
-        <View style={estilos.informacoes}>
-          <Ionicons name="location-outline" size={20} color="black" />
-          <Text style={estilos.subtitulo}> Condominio Solar </Text>
+              {tabAtiva === tab && (
+                <View style={styles.tabIndicador} />
+              )}
+            </TouchableOpacity>
+          ))}
         </View>
 
+        {inspecoesFiltradas.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            onPress={() =>
+              navigation.navigate("Detalhes", {
+                id: item.id,
+              })
+            }
+            style={[
+              styles.card,
+              {
+                borderLeftColor:
+                  item.status === "pendencia"
+                    ? "#E53935"
+                    : "#2E7D32",
+              },
+            ]}
+          >
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitulo}>
+                {item.titulo}
+              </Text>
 
-        <View style={estilos.informacoes}>
-          <Ionicons name="calendar-outline" size={20} color="black" />
-          <Text style={estilos.subtitulo}> 25/10/2023 10:30 </Text>
-        </View>
+              <View
+                style={[
+                  styles.badge,
+                  {
+                    backgroundColor:
+                      item.status === "pendencia"
+                        ? "#FDECEA"
+                        : "#E6F4EA",
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={
+                    item.status === "pendencia"
+                      ? "warning-outline"
+                      : "checkmark-circle-outline"
+                  }
+                  size={14}
+                  color={
+                    item.status === "pendencia"
+                      ? "#E53935"
+                      : "#2E7D32"
+                  }
+                />
 
+                <Text
+                  style={[
+                    styles.badgeTexto,
+                    {
+                      color:
+                        item.status === "pendencia"
+                          ? "#E53935"
+                          : "#2E7D32",
+                    },
+                  ]}
+                >
+                  {item.status === "pendencia"
+                    ? "Pendência"
+                    : "Conforme"}
+                </Text>
+              </View>
+            </View>
 
-     <View style={estilos.card}>
-  <Text style={estilos.texto_card}> OBSERVAÇÃO DO TÉCNICO </Text>
+            <View style={styles.linha}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color="#757575"
+              />
 
-  <View style={estilos.areaAudio}>
+              <Text style={styles.textoSecundario}>
+                {item.local}
+              </Text>
+            </View>
 
-    <TouchableOpacity style={estilos.botaoPlay} onPress={tocarAudio}>
-      <Ionicons name={status.playing ? "pause" : "play"} size={32} color="white" />
-    </TouchableOpacity>
+            <View style={styles.separador} />
 
-    <View style={estilos.audioInfo}>
+            <View style={styles.linhaData}>
+              <View style={styles.linha}>
+                <MaterialCommunityIcons
+                  name="calendar-blank-outline"
+                  size={14}
+                  color="#757575"
+                />
 
-      <View style={estilos.barraAudio}>
-        <View
-          style={[
-            estilos.progressoAudio,
-            {
-              width: `${progresso}%`,
-            },
-          ]}
-        />
-      </View>
+                <Text style={styles.textoSecundario}>
+                  {item.data}
+                </Text>
+              </View>
 
-      <View style={estilos.tempos}>
-        <Text style={estilos.tempo}> {formatarTempo(status.currentTime)} </Text>
-        <Text style={estilos.tempoTotal}> {formatarTempo(status.duration)} </Text>
-      </View>
-
-    </View>
-
-  </View>
-</View>
-
-
+              <Ionicons
+                name="chevron-forward"
+                size={18}
+                color="#BDBDBD"
+              />
+            </View>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
-            
-      <BottomNavBar />
 
+      <BottomNavBar />
     </View>
   );
 }
 
-
-const estilos = StyleSheet.create({
-
-  tudo: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
     backgroundColor: "#F5F6FA",
-    width: "100%",
   },
 
-
-
-botaoNovo: {
-  backgroundColor: "rgb(0, 60, 132)",
-  width: "75%",
-  height: 55,
-  borderRadius: 8,
-  justifyContent: "center",
-  alignItems: "center",
-  alignSelf: "center",
-  flexDirection: "row",
-  gap:10,
-  marginTop: 15,
-},
-
-   textoBotaoNovo: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
-
-
-
-  cabecalho: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-
-
-  conteudo: {
-    flex: 1,
-    width: "100%",
-  },
-
-
-  conteudoInterno: {
-    paddingBottom: 120,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-
-
-  linha: {
-    height: 1,
-    backgroundColor: "#CCCCCC",
-    width: "100%",
-  },
-
-
-  titulo_cabecalho: {
-    color: "#000",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-
 
   titulo: {
-    color: "#000",
-    fontSize: 25,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    marginBottom: 16,
   },
 
-
-  subtitulo: {
-    color: "#787878",
-    fontSize: 15,
-    fontWeight: "bold",
-    marginLeft: 5,
-  },
-
-
-  informacoes: {
-    marginTop: 15,
-    flexDirection: "row",
+  botaoNova: {
+    backgroundColor: "#0D2B6B",
+    borderRadius: 10,
+    paddingVertical: 14,
     alignItems: "center",
-    width: "100%",
+    marginBottom: 16,
   },
 
+  botaoNovaTexto: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+
+  tabs: {
+    flexDirection: "row",
+    marginBottom: 16,
+  },
+
+  tabItem: {
+    marginRight: 24,
+    paddingBottom: 8,
+  },
+
+  tabTexto: {
+    fontSize: 14,
+    color: "#9E9E9E",
+    fontWeight: "500",
+  },
+
+  tabTextoAtiva: {
+    color: "#0D2B6B",
+    fontWeight: "700",
+  },
+
+  tabIndicador: {
+    marginTop: 6,
+    height: 2,
+    backgroundColor: "#0D2B6B",
+    borderRadius: 1,
+  },
 
   card: {
-    backgroundColor: "#FFF",
-    width: "100%",
-    marginTop: 20,
-    padding: 17,
-    borderRadius: 10,
-    minHeight: 100,
-    borderWidth: 2,
-    borderColor: "#CCCCCC",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    padding: 14,
+    marginBottom: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    elevation: 2,
   },
 
-
-  texto_card: {
-    color: "#000",
-    fontSize: 13,
-    fontWeight: "bold",
-  },
-
-
-  texto_alerta: {
-    color: "#ff0000",
-    fontSize: 15,
-    marginLeft: 5,
-  },
-
-
-  areaAudio: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 25,
-  },
-
-
-  botaoPlay: {
-    width: 65,
-    height: 65,
-    borderRadius: 35,
-    backgroundColor: "#004AAD",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-
-  audioInfo: {
-    flex: 1,
-    marginLeft: 20,
-  },
-
-
-  barraAudio: {
-    height: 8,
-    backgroundColor: "#E5E7EB",
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-
-
-  progressoAudio: {
-    height: "100%",
-    backgroundColor: "#004AAD",
-    borderRadius: 10,
-  },
-
-
-  tempos: {
+  cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    alignItems: "flex-start",
+    marginBottom: 8,
   },
 
-
-  tempo: {
-    color: "#444",
+  cardTitulo: {
     fontSize: 16,
+    fontWeight: "700",
+    color: "#1A1A1A",
+    flexShrink: 1,
   },
 
-
-  tempoTotal: {
-    color: "#B8BCC8",
-    fontSize: 16,
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+    gap: 4,
   },
 
+  badgeTexto: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginLeft: 4,
+  },
+
+  linha: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  textoSecundario: {
+    fontSize: 13,
+    color: "#757575",
+    marginLeft: 6,
+  },
+
+  separador: {
+    height: 1,
+    backgroundColor: "#EEEEEE",
+    marginVertical: 10,
+  },
+
+  linhaData: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 });
