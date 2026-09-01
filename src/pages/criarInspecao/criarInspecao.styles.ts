@@ -15,7 +15,7 @@ export const estilos = StyleSheet.create({
         margin: 10,
         width: "100%",
         padding: 20,
-        height: 430,
+        height: 460,
         borderRadius: 10,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,

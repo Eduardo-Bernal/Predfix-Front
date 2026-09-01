@@ -22,7 +22,7 @@ export default function CriarInspecao() {
 
     async function handleSave() {
         if (!equipamento.trim() || !localizacao.trim() || !cliente.trim() || !situacao || !observacao) {
-            Alert.alert("⚠ Atenção", "Preencha todos os campos obrigatórios (*).")
+            Alert.alert("Atenção!", "Preencha todos os campos obrigatórios (*).")
             return;
         }
 
