@@ -1,38 +1,47 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
+import BottomNavBar from "../components/bottomNavBar";
 
 export default function Perfil() {
     return (
-        <View>
-            <View style={estilos.cabecalho}>
-                <Image source={require('../../../assets/imgs/Text.png')} style={estilos.imgLogo} />
-                <Image source={require('../../../assets/imgs/perfil.png')} style={estilos.imgPerfil1} />
-            </View>
-            <View style={estilos.linha}></View>
+        <View style={estilos.container}>
             <View>
-                <Text style={estilos.text1}>Perfil</Text>
-            </View>
-            <View style={estilos.iniciaisPerfil}>
-                <Image source={require('../../../assets/imgs/perfil.png')} style={estilos.imgPerfil2} />
-            </View>
-            <View style={estilos.areaDados}>
-                <View style={estilos.areaNome}>
-                    <Text style={estilos.nome1}>Nome</Text>
-                    <Text style={estilos.nome2}>João Carlos</Text>
-                </View>
                 <View style={estilos.linha}></View>
-                <View style={estilos.areaEmail}>
-                    <Text style={estilos.email1}>Email</Text>
-                    <Text style={estilos.email2}>joaocarlos@predifix.com</Text>
+                <View>
+                    <Text style={estilos.text1}>Perfil</Text>
                 </View>
+                <View style={estilos.iniciaisPerfil}>
+                    <Image source={require('../../../assets/perfil.png')} style={estilos.imgPerfil2} />
+                </View>
+                <View style={estilos.areaDados}>
+                    <View style={estilos.areaNome}>
+                        <Text style={estilos.nome1}>Nome</Text>
+                        <Text style={estilos.nome2}>João Carlos</Text>
+                    </View>
+                    <View style={estilos.linha}></View>
+                    <View style={estilos.areaEmail}>
+                        <Text style={estilos.email1}>Email</Text>
+                        <Text style={estilos.email2}>joaocarlos@predifix.com</Text>
+                    </View>
+                </View>
+                
             </View>
+            <BottomNavBar active={"Perfil"} />
         </View>
+        
     )
 }
 
 const estilos = StyleSheet.create({
     safearea: {
         flex: 1,
+    },
+
+    container: {    
+        flex: 1,
+        flexDirection: "column",
+        justifyContent: "space-between",
+        backgroundColor: "#F5F6FA"
     },
 
     cabecalho: {
