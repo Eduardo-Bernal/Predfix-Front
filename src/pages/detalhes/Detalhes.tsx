@@ -1,6 +1,21 @@
 import React from "react";
+
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 
 import {
   useAudioPlayer,
@@ -8,19 +23,30 @@ import {
 } from "expo-audio";
 
 import BottomNavBar from "../components/bottomNavBar";
-import { useNavigation } from "@react-navigation/native";
 
+import { RootStackParamList } from "../../routes/types";
+import { useDetalheInspecao } from "../../hooks/useDetalheInspecao";
+import { inspecaoService } from "../../services/inspecaoService";
 
 export default function Detalhes() {
-
   const navigation = useNavigation<any>();
-  
-  const player = useAudioPlayer(
-    require("../../../assets/audio.mp3")
-  );
 
+  const route =
+    useRoute<RouteProp<RootStackParamList, "Detalhes">>();
+
+  const { id } = route.params;
+
+  const {
+    inspecao,
+    carregando,
+    erro,
+    dataFormatada,
+  } = useDetalheInspecao(id);
+
+  const audioUrl = inspecaoService.obterUrlAudio(id);
+
+  const player = useAudioPlayer(audioUrl);
   const status = useAudioPlayerStatus(player);
-
 
   const tocarAudio = () => {
     if (status.playing) {
@@ -30,7 +56,6 @@ export default function Detalhes() {
     }
   };
 
-
   const formatarTempo = (segundos: number) => {
     if (!segundos) {
       return "00:00";
@@ -39,274 +64,406 @@ export default function Detalhes() {
     const minutos = Math.floor(segundos / 60);
     const segundosRestantes = Math.floor(segundos % 60);
 
-    return `${minutos
-      .toString()
-      .padStart(2, "0")}:${segundosRestantes
-      .toString()
-      .padStart(2, "0")}`;
+    return `${String(minutos).padStart(2, "0")}:${String(
+      segundosRestantes
+    ).padStart(2, "0")}`;
   };
-
 
   const progresso =
     status.duration > 0
       ? (status.currentTime / status.duration) * 100
       : 0;
 
+  if (carregando) {
+    return (
+      <View style={styles.estadoContainer}>
+        <ActivityIndicator
+          size="large"
+          color="#0D2B6B"
+        />
+
+        <Text style={styles.textoCarregando}>
+          Carregando inspeção...
+        </Text>
+      </View>
+    );
+  }
+
+  if (erro || !inspecao) {
+    return (
+      <View style={styles.estadoContainer}>
+        <Ionicons
+          name="alert-circle-outline"
+          size={42}
+          color="#E53935"
+        />
+
+        <Text style={styles.textoErro}>
+          {erro || "Inspeção não encontrada."}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.botaoVoltarErro}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.textoBotaoVoltar}>
+            Voltar
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const pendencia = inspecao.statusInspecao;
 
   return (
-    <View style={estilos.tudo}>
-
-      <View style={estilos.cabecalho}>
-        <TouchableOpacity onPress={() => navigation.navigate("Listagem")}>
-          <Ionicons name="arrow-back" size={32} color="blue" />
+    <View style={styles.container}>
+      <View style={styles.cabecalho}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons
+            name="arrow-back"
+            size={28}
+            color="#0D2B6B"
+          />
         </TouchableOpacity>
-        <Text style={estilos.titulo_cabecalho}> PrediFix </Text>
-        <Ionicons name="share-outline" size={32} color="blue" />
+
+        <Text style={styles.tituloCabecalho}>
+          Detalhes
+        </Text>
+
+        <View style={{ width: 28 }} />
       </View>
 
+      <ScrollView contentContainerStyle={styles.conteudo}>
+        <Text style={styles.titulo}>
+          {inspecao.equipamento}
+        </Text>
 
-      <View style={estilos.linha} />
-
-
-      <ScrollView
-        style={estilos.conteudo}
-        contentContainerStyle={estilos.conteudoInterno}
-      >
-
-        <Text style={estilos.titulo}> Elevador Social </Text>
-
-
-        <View style={estilos.informacoes}>
-          <Ionicons name="location-outline" size={20} color="black" />
-          <Text style={estilos.subtitulo}> Condominio Solar </Text>
-        </View>
-
-
-        <View style={estilos.informacoes}>
-          <Ionicons name="calendar-outline" size={20} color="black" />
-          <Text style={estilos.subtitulo}> 25/10/2023 10:30 </Text>
-        </View>
-
-
-     <View style={estilos.card}>
-  <Text style={estilos.texto_card}> OBSERVAÇÃO DO TÉCNICO </Text>
-
-  <View style={estilos.areaAudio}>
-
-    <TouchableOpacity style={estilos.botaoPlay} onPress={tocarAudio}>
-      <Ionicons name={status.playing ? "pause" : "play"} size={32} color="white" />
-    </TouchableOpacity>
-
-    <View style={estilos.audioInfo}>
-
-      <View style={estilos.barraAudio}>
         <View
           style={[
-            estilos.progressoAudio,
+            styles.status,
             {
-              width: `${progresso}%`,
+              backgroundColor: pendencia
+                ? "#FDECEA"
+                : "#E6F4EA",
             },
           ]}
-        />
-      </View>
+        >
+          <Ionicons
+            name={
+              pendencia
+                ? "warning-outline"
+                : "checkmark-circle-outline"
+            }
+            size={16}
+            color={
+              pendencia
+                ? "#E53935"
+                : "#2E7D32"
+            }
+          />
 
-      <View style={estilos.tempos}>
-        <Text style={estilos.tempo}> {formatarTempo(status.currentTime)} </Text>
-        <Text style={estilos.tempoTotal}> {formatarTempo(status.duration)} </Text>
-      </View>
+          <Text
+            style={[
+              styles.statusTexto,
+              {
+                color: pendencia
+                  ? "#E53935"
+                  : "#2E7D32",
+              },
+            ]}
+          >
+            {inspecao.statusTexto}
+          </Text>
+        </View>
 
-    </View>
+        <View style={styles.cardInfo}>
+          <View style={styles.linhaInfo}>
+            <Ionicons
+              name="location-outline"
+              size={20}
+              color="#757575"
+            />
 
-  </View>
-</View>
+            <View style={styles.textosInfo}>
+              <Text style={styles.rotulo}>
+                Localização
+              </Text>
 
+              <Text style={styles.valor}>
+                {inspecao.localizacao}
+              </Text>
+            </View>
+          </View>
 
-<TouchableOpacity style={estilos.botaoNovo}>
-    <Ionicons name="pencil" size={22} color="white" />
-  <Text style={estilos.textoBotaoNovo}> Editar Inspeção </Text>
-</TouchableOpacity>
+          <View style={styles.separador} />
 
+          <View style={styles.linhaInfo}>
+            <Ionicons
+              name="business-outline"
+              size={20}
+              color="#757575"
+            />
+
+            <View style={styles.textosInfo}>
+              <Text style={styles.rotulo}>
+                Cliente
+              </Text>
+
+              <Text style={styles.valor}>
+                {inspecao.cliente}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.separador} />
+
+          <View style={styles.linhaInfo}>
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color="#757575"
+            />
+
+            <View style={styles.textosInfo}>
+              <Text style={styles.rotulo}>
+                Data
+              </Text>
+
+              <Text style={styles.valor}>
+                {dataFormatada}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.cardAudio}>
+          <Text style={styles.tituloObservacao}>
+            OBSERVAÇÃO DO TÉCNICO
+          </Text>
+
+          <View style={styles.areaAudio}>
+            <TouchableOpacity
+              style={styles.botaoPlay}
+              onPress={tocarAudio}
+            >
+              <Ionicons
+                name={
+                  status.playing
+                    ? "pause"
+                    : "play"
+                }
+                size={30}
+                color="#FFFFFF"
+              />
+            </TouchableOpacity>
+
+            <View style={styles.audioInfo}>
+              <View style={styles.barraAudio}>
+                <View
+                  style={[
+                    styles.progressoAudio,
+                    {
+                      width: `${progresso}%`,
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.tempos}>
+                <Text style={styles.tempo}>
+                  {formatarTempo(status.currentTime)}
+                </Text>
+
+                <Text style={styles.tempo}>
+                  {formatarTempo(status.duration)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
       </ScrollView>
-            
-      <BottomNavBar />
 
+      <BottomNavBar />
     </View>
   );
 }
 
-
-const estilos = StyleSheet.create({
-
-  tudo: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
     backgroundColor: "#F5F6FA",
-    width: "100%",
   },
-
-
-
-botaoNovo: {
-  backgroundColor: "rgb(0, 60, 132)",
-  width: "75%",
-  height: 55,
-  borderRadius: 8,
-  justifyContent: "center",
-  alignItems: "center",
-  alignSelf: "center",
-  flexDirection: "row",
-  gap:10,
-  marginTop: 15,
-},
-
-   textoBotaoNovo: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-
-
 
   cabecalho: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    width: "100%",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
   },
 
+  tituloCabecalho: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1A1A1A",
+  },
 
   conteudo: {
-    flex: 1,
-    width: "100%",
-  },
-
-
-  conteudoInterno: {
+    padding: 16,
     paddingBottom: 120,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
   },
-
-
-  linha: {
-    height: 1,
-    backgroundColor: "#CCCCCC",
-    width: "100%",
-  },
-
-
-  titulo_cabecalho: {
-    color: "#000",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-
 
   titulo: {
-    color: "#000",
-    fontSize: 25,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    marginBottom: 12,
   },
 
-
-  subtitulo: {
-    color: "#787878",
-    fontSize: 15,
-    fontWeight: "bold",
-    marginLeft: 5,
-  },
-
-
-  informacoes: {
-    marginTop: 15,
+  status: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 5,
+    marginBottom: 20,
   },
 
-
-  card: {
-    backgroundColor: "#FFF",
-    width: "100%",
-    marginTop: 20,
-    padding: 17,
-    borderRadius: 10,
-    minHeight: 100,
-    borderWidth: 2,
-    borderColor: "#CCCCCC",
-  },
-
-
-  texto_card: {
-    color: "#000",
+  statusTexto: {
     fontSize: 13,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
 
+  cardInfo: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+  },
 
-  texto_alerta: {
-    color: "#ff0000",
+  linhaInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  textosInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+
+  rotulo: {
+    fontSize: 12,
+    color: "#9E9E9E",
+    marginBottom: 3,
+  },
+
+  valor: {
     fontSize: 15,
-    marginLeft: 5,
+    color: "#333333",
+    fontWeight: "600",
   },
 
+  separador: {
+    height: 1,
+    backgroundColor: "#EEEEEE",
+    marginVertical: 14,
+  },
+
+  cardAudio: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    elevation: 2,
+  },
+
+  tituloObservacao: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1A1A1A",
+    marginBottom: 20,
+  },
 
   areaAudio: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 25,
   },
-
 
   botaoPlay: {
-    width: 65,
-    height: 65,
-    borderRadius: 35,
-    backgroundColor: "#004AAD",
-    justifyContent: "center",
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "#0D2B6B",
     alignItems: "center",
+    justifyContent: "center",
   },
-
 
   audioInfo: {
     flex: 1,
-    marginLeft: 20,
+    marginLeft: 16,
   },
 
-
   barraAudio: {
-    height: 8,
-    backgroundColor: "#E5E7EB",
+    height: 7,
     borderRadius: 10,
+    backgroundColor: "#E5E7EB",
     overflow: "hidden",
   },
 
-
   progressoAudio: {
     height: "100%",
-    backgroundColor: "#004AAD",
-    borderRadius: 10,
+    backgroundColor: "#0D2B6B",
   },
-
 
   tempos: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 8,
   },
-
 
   tempo: {
-    color: "#444",
-    fontSize: 16,
+    fontSize: 12,
+    color: "#757575",
   },
 
-
-  tempoTotal: {
-    color: "#B8BCC8",
-    fontSize: 16,
+  estadoContainer: {
+    flex: 1,
+    backgroundColor: "#F5F6FA",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 30,
   },
 
+  textoCarregando: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#757575",
+  },
+
+  textoErro: {
+    marginTop: 12,
+    fontSize: 15,
+    color: "#E53935",
+    textAlign: "center",
+  },
+
+  botaoVoltarErro: {
+    marginTop: 20,
+    backgroundColor: "#0D2B6B",
+    paddingHorizontal: 24,
+    paddingVertical: 11,
+    borderRadius: 8,
+  },
+
+  textoBotaoVoltar: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
 });

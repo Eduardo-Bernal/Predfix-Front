@@ -1,7 +1,7 @@
 export type RootStackParamList = {
-    Login: undefined;
-    Listagem: undefined;
-    Perfil: undefined;
-    Detalhes: undefined;
-    CriarInspecao: undefined;
+  Login: undefined;
+  Listagem: undefined;
+  Perfil: undefined;
+  Detalhes: { id: number };
+  CriarInspecao: undefined;
 };
