@@ -1,14 +1,18 @@
-import { View, Text, TextInput, Alert, Pressable, ScrollView } from "react-native";
+import { View, Text, TextInput, Alert, Pressable, ScrollView, TouchableOpacity } from "react-native";
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from "expo-audio";
 import React, { useEffect, useState } from "react";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { estilos } from "./criarInspecao.styles";
 import { AdicionarInspecao, ObservacaoUpload } from "../../@types/criarInspecao";
 import useInspecao from "../../hooks/useInspecao";
+import { useNavigation } from "@react-navigation/native";
+
 
 
 export default function CriarInspecao() {
+
+    const navigation = useNavigation();
 
     const { adicionarInspecao } = useInspecao();
 
@@ -18,11 +22,20 @@ export default function CriarInspecao() {
     const [cliente, setCliente] = useState("");
     const [situacao, setSituacao] = useState<"conforme" | "pendencia" | null>(null);
     // aqui e nulo so na hora de criar uma nova inspecao
-    const [observacao, setObservacao] = useState<ObservacaoUpload | null>(null)
+    const [observacao, setObservacao] = useState<ObservacaoUpload | null>(null);
 
     async function handleSave() {
-        if (!equipamento.trim() || !localizacao.trim() || !cliente.trim() || !situacao || !observacao) {
-            Alert.alert("Atenção!", "Preencha todos os campos obrigatórios (*).")
+        if (
+            !equipamento.trim() ||
+            !localizacao.trim() ||
+            !cliente.trim() ||
+            !situacao ||
+            !observacao
+        ) {
+            Alert.alert(
+                "Atenção!",
+                "Preencha todos os campos obrigatórios (*)."
+            );
             return;
         }
 
@@ -30,20 +43,30 @@ export default function CriarInspecao() {
             equipamento: equipamento,
             localizacao: localizacao,
             cliente: cliente,
-            statusInspecao: situacao === "conforme",
+            statusInspecao: situacao === "pendencia",
             observacao: observacao
-        }
+        };
 
-        const sucesso = await adicionarInspecao(novaInspecao);
+        try {
+            const sucesso = await adicionarInspecao(novaInspecao);
 
-        if (sucesso) {
-            setEquipamento("")
-            setLocalizacao("")
-            setCliente("")
-            setSituacao(null)
-            setObservacao(null)
+            if (sucesso) {
 
-            Alert.alert("Cadastro realizado!", "Inspeção salva com sucesso!");
+                // limpa os campos
+                setEquipamento("");
+                setLocalizacao("");
+                setCliente("");
+                setSituacao(null);
+                setObservacao(null);
+
+                Alert.alert(
+                    "Cadastro realizado!",
+                    "Inspeção salva com sucesso!",
+                );
+            }
+
+        } catch (error) {
+            console.log("Erro ao salvar inspeção:", error);
         }
     }
 
@@ -82,12 +105,36 @@ export default function CriarInspecao() {
     // começa a gravação
     async function iniciarGravacao() {
         try {
+            const permissao =
+                await AudioModule.requestRecordingPermissionsAsync();
+
+            if (!permissao.granted) {
+                Alert.alert(
+                    "Permissão necessária",
+                    "Permita o acesso ao microfone para gravar a observação."
+                );
+
+                return;
+            }
+
+            await setAudioModeAsync({
+                playsInSilentMode: true,
+                allowsRecording: true,
+            });
+
             await audioRecorder.prepareToRecordAsync();
 
             audioRecorder.record();
 
+            setObservacao(null);
+
+            console.log("Gravação iniciada");
+
         } catch (error) {
-            console.log("Erro ao iniciar gravação:", error);
+            console.log(
+                "Erro ao iniciar gravação:",
+                error
+            );
 
             Alert.alert(
                 "Erro",
@@ -103,25 +150,35 @@ export default function CriarInspecao() {
 
             const uri = audioRecorder.uri;
 
-            console.log("Áudio:", audioRecorder.uri);
+            console.log("URI DO ÁUDIO:", uri);
 
-            if (uri) {
-                const audio: ObservacaoUpload = {
-                    uri: uri,
-                    name: `observacao_${Date.now()}.m4a`,
-                    mimeType: "audio/mp4",
-                };
+            if (!uri) {
+                Alert.alert(
+                    "Erro",
+                    "Não foi possível obter o áudio gravado."
+                );
 
-                setObservacao(audio);
+                return;
             }
 
-            Alert.alert(
-                "Áudio gravado",
-                "A observação foi gravada com sucesso."
+            const novoAudio: ObservacaoUpload = {
+                uri: uri,
+                name: `observacao_${Date.now()}.m4a`,
+                mimeType: "audio/m4a",
+            };
+
+            setObservacao(novoAudio);
+
+            console.log(
+                "Áudio gravado:",
+                uri
             );
 
         } catch (error) {
-            console.log("Erro ao parar gravação:", error);
+            console.log(
+                "Erro ao parar gravação:",
+                error
+            );
 
             Alert.alert(
                 "Erro",
@@ -160,6 +217,16 @@ export default function CriarInspecao() {
                 contentContainerStyle={estilos.container}
                 showsVerticalScrollIndicator={false}
             >
+                {/* voltar para listagem com cabecalho */}
+                <View style={estilos.cabecalho}>
+                    <TouchableOpacity onPress={() => navigation.navigate("Listagem")}>
+                                                                     {/* ta com erro, mas funciona normalmente */}
+                        <Ionicons name="arrow-back" size={32} color="blue" />
+                    </TouchableOpacity>
+                    <Text style={estilos.titulo_cabecalho}> Nova Inspeção </Text>
+                </View>
+
+                <View style={estilos.linha} />
 
                 {/* forms */}
                 <View style={estilos.forms}>
@@ -259,25 +326,30 @@ export default function CriarInspecao() {
 
                 {/* audio */}
                 <View style={estilos.formAudio}>
-                    <Text style={estilos.tituloAudio}>Observação em áudio</Text>
-                    <Text style={estilos.textoAudio}>Grave uma nota de voz detalhando a inspeção.</Text>
-                    <Text style={estilos.obrigatorio}>*Obrigatório</Text>
+                    <Text style={estilos.tituloAudio}>
+                        Observação em áudio
+                    </Text>
+
+                    <Text style={estilos.textoAudio}>
+                        Grave uma nota de voz detalhando a inspeção.
+                    </Text>
+
+                    <Text style={estilos.obrigatorio}>
+                        *Obrigatório
+                    </Text>
 
                     <Pressable
                         onPress={controlarGravacao}
                         style={[
                             estilos.botaoAudio,
-
                             recorderState.isRecording
                                 ? estilos.botaoGravando
-                                : audioRecorder.uri
+                                : observacao
                                     ? estilos.botaoGravado
                                     : estilos.botaoInicial,
                         ]}
                     >
-
                         {recorderState.isRecording ? (
-
                             <>
                                 <Text style={estilos.icone}>
                                     ■
@@ -293,9 +365,7 @@ export default function CriarInspecao() {
                                     )}s
                                 </Text>
                             </>
-
-                        ) : audioRecorder.uri ? (
-
+                        ) : observacao ? (
                             <>
                                 <Text style={estilos.icone}>
                                     ✓
@@ -305,24 +375,19 @@ export default function CriarInspecao() {
                                     Áudio gravado
                                 </Text>
                             </>
-
                         ) : (
-
                             <>
-                                <Text style={estilos.icone}>
-                                    <Feather
-                                        name="mic"
-                                        size={60}
-                                    />
-                                </Text>
+                                <Feather
+                                    name="mic"
+                                    size={50}
+                                    color="#0878F9"
+                                />
 
                                 <Text style={estilos.textoBotao}>
                                     Gravar observação
                                 </Text>
                             </>
-
                         )}
-
                     </Pressable>
                 </View>
 

@@ -12,7 +12,13 @@ export function useInspecao() {
             setInspecao((antigas) => [novaInspecao, ...antigas])
             return novaInspecao;
         } catch (error) {
-            Alert.alert("Erro!", "Problema ao cadastrar inspeção!")
+            
+            Alert.alert(
+                "Erro!",
+                "Problema ao cadastrar inspeção!"
+            );
+
+            throw error;
         }
     }
 

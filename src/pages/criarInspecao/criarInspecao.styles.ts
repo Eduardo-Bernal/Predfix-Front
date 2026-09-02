@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native" 
+import { StyleSheet } from "react-native"
 
 export const estilos = StyleSheet.create({
     container: {
@@ -8,6 +8,30 @@ export const estilos = StyleSheet.create({
         alignItems: "center",
         padding: 20,
         // height: "100%"
+    },
+
+
+    cabecalho: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        width: "100%",
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+    },
+
+    linha: {
+        height: 1,
+        backgroundColor: "#CCCCCC",
+        width: "100%",
+    },
+
+
+    titulo_cabecalho: {
+        color: "#000",
+        fontSize: 18,
+        fontWeight: "bold",
+        textAlign: "center",
     },
 
     forms: {
