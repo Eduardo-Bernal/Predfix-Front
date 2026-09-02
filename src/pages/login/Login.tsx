@@ -168,7 +168,7 @@ export default function TelaLogin() {
               </View>
             </View>
 
-            {/* Opção Lembrar de mim */}
+            {/* Opção Lembrar de mim
             <View style={estilos.linhaOpcoes}>
               <TouchableOpacity
                 style={estilos.opcaoLembrar}
@@ -187,7 +187,7 @@ export default function TelaLogin() {
                 </View>
                 <Text style={estilos.textoLembrar}>Lembrar de mim</Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
 
             {/* Botão de Entrar */}
             <TouchableOpacity

@@ -13,8 +13,6 @@ export const api = axios.create({
     timeout: 10000
 });
 
-//SOLICITAÇÃO/REQUISIÇÃO --OPAAA PERA AI, QUERO O MEU TOKEN DO USUÁRIO-->
-//interceptar/impedir o curso toda requisição feita pela API
 api.interceptors.request.use(async (config) =>{
     const token = await AsyncStorage.getItem(process.env.EXPO_PUBLIC_TOKEN_KEY);
 
