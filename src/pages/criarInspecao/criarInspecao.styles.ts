@@ -12,7 +12,6 @@ export const estilos = StyleSheet.create({
 
     cabecalho: {
         flexDirection: "row",
-        justifyContent: "space-between",
         alignItems: "center",
         width: "100%",
         paddingHorizontal: 20,
@@ -20,25 +19,26 @@ export const estilos = StyleSheet.create({
     },
 
     linha: {
-        height: 1,
-        backgroundColor: "#CCCCCC",
-        width: "100%",
+        height: 2,
+        backgroundColor: "#rgba(93, 101, 116, 0.3)",
+        width: "120%",
     },
-
 
     titulo_cabecalho: {
         color: "#000",
-        fontSize: 22,
+        fontSize: 25,
         fontWeight: "bold",
         textAlign: "center",
+        marginLeft: 50,
+        marginTop: -4
     },
 
     forms: {
         backgroundColor: "white",
-        margin: 10,
+        margin: 30,
         width: "100%",
         padding: 20,
-        height: 460,
+        height: 490,
         borderRadius: 10,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,
@@ -60,7 +60,7 @@ export const estilos = StyleSheet.create({
         width: "100%",
         height: 60,
         padding: 5,
-        marginBottom: 10
+        marginBottom: 20
 
     },
 
@@ -122,9 +122,10 @@ export const estilos = StyleSheet.create({
     formAudio: {
         backgroundColor: "#FFFFFF",
         margin: 10,
+        marginBottom: 30,
         width: "100%",
         padding: 20,
-        height: 360,
+        height: 370,
         borderRadius: 10,
         borderColor: "#rgba(93, 101, 116, 0.5)",
         borderWidth: 1,
@@ -188,7 +189,7 @@ export const estilos = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 10,
-        marginTop: 30
+        marginTop: 20
     },
 
     textoSalvar: {

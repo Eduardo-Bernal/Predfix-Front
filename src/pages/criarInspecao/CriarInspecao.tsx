@@ -221,7 +221,7 @@ export default function CriarInspecao() {
                 <View style={estilos.cabecalho}>
                     <TouchableOpacity onPress={() => navigation.navigate("Listagem")}>
                                                                      {/* ta com erro, mas funciona normalmente */}
-                        <Ionicons name="arrow-back" size={32} color="black" />
+                        <Ionicons name="arrow-back" size={30} color="#003D9B" />
                     </TouchableOpacity>
                     <Text style={estilos.titulo_cabecalho}> Nova Inspeção </Text>
                 </View>
