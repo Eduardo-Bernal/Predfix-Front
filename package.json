@@ -19,6 +19,7 @@
     "expo-audio": "~1.1.1",
     "expo-constants": "~18.0.14",
     "expo-router": "~6.0.24",
+    "expo-av": "~16.0.8",
     "expo-secure-store": "^57.0.1",
     "expo-status-bar": "~3.0.9",
     "jwt-decode": "^4.0.0",

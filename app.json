@@ -29,6 +29,12 @@
     "plugins": [
       "expo-audio",
       "expo-router"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Permita que o PredFix use o microfone para gravar a observação da inspeção."
+        }
+      ]
     ]
   }
 }
