@@ -10,7 +10,6 @@ export const estilos = StyleSheet.create({
         // height: "100%"
     },
 
-
     cabecalho: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -29,7 +28,7 @@ export const estilos = StyleSheet.create({
 
     titulo_cabecalho: {
         color: "#000",
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: "bold",
         textAlign: "center",
     },
