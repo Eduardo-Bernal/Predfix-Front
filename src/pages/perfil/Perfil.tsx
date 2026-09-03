@@ -1,12 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import BottomNavBar from "../components/bottomNavBar";
-import { decodificarToken } from "../../context/AuthContext";
+import { decodificarToken, useAuth } from "../../context/AuthContext";
 import { FormatarIconNome } from "../../utils/formatarNome";
 
 export default function Perfil() {
-    // const { usuario } = useAuth();
-    const usuario = decodificarToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjQiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiR3VpbGhlcm1lIFRvcnJlcyAiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJndEBnIiwiZXhwIjoxNzg4MzU4MTIxLCJpc3MiOiJQcmVkaUZpeEFwaSIsImF1ZCI6IlByZWRpRml4RnJvbnQifQ.wI7mUfyHCyAqlZm4dqC-y0ucEkwSrYfoigSziRt_Xf8");
+    const { usuario } = useAuth();
 
     return (
         <View style={estilos.container}>
