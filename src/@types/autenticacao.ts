@@ -29,8 +29,8 @@ export interface AuthContextData {
   loading: boolean;       
   login: (dados: Login) => Promise<void>; 
   logout: () => Promise<void>;            
-    email: string,
-    senha: string
+    // email: string,
+    // senha: string
 }
 
 export interface LoginResponse {
