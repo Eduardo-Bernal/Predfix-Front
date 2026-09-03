@@ -1,8 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import BottomNavBar from "../components/bottomNavBar";
+import { decodificarToken, useAuth } from "../../context/AuthContext";
+import { FormatarIconNome } from "../../utils/formatarNome";
 
 export default function Perfil() {
+    const { usuario } = useAuth();
+
     return (
         <View style={estilos.container}>
             <View>
@@ -11,24 +15,24 @@ export default function Perfil() {
                     <Text style={estilos.text1}>Perfil</Text>
                 </View>
                 <View style={estilos.iniciaisPerfil}>
-                    <Image source={require('../../../assets/perfil.png')} style={estilos.imgPerfil2} />
+                    <Text style={estilos.iniciaisPerfil2}>{usuario?.nome ? FormatarIconNome(usuario.nome) : "😔"}</Text>
                 </View>
                 <View style={estilos.areaDados}>
                     <View style={estilos.areaNome}>
                         <Text style={estilos.nome1}>Nome</Text>
-                        <Text style={estilos.nome2}>João Carlos</Text>
+                        <Text style={estilos.nome2}>{usuario?.nome}</Text>
                     </View>
                     <View style={estilos.linha}></View>
                     <View style={estilos.areaEmail}>
                         <Text style={estilos.email1}>Email</Text>
-                        <Text style={estilos.email2}>joaocarlos@predifix.com</Text>
+                        <Text style={estilos.email2}>{usuario?.email}</Text>
                     </View>
                 </View>
-                
+
             </View>
             <BottomNavBar active={"Perfil"} />
         </View>
-        
+
     )
 }
 
@@ -37,7 +41,7 @@ const estilos = StyleSheet.create({
         flex: 1,
     },
 
-    container: {    
+    container: {
         flex: 1,
         flexDirection: "column",
         justifyContent: "space-between",
@@ -87,13 +91,37 @@ const estilos = StyleSheet.create({
         shadowOpacity: 0.08,
         shadowRadius: 6,
         elevation: 3,
+        fontSize: 50,
+        
+
+    },
+
+    iniciaisPerfil2: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#003077",
+        color: "#ffffff",
+        padding: 20,
+        marginHorizontal: 30,
+        marginTop: 0,
+        marginBottom: 15,
+        borderRadius: 999,
+        borderColor: "#cacaca",
+        borderWidth: 0,
+        shadowColor: "#000000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
+        fontSize: 50,
+        
 
     },
 
     imgPerfil2: {
         width: 100,
         height: 110,
-        borderRadius: 10,
+        borderRadius:20,
     },
 
     areaDados: {

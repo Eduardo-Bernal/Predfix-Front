@@ -1,3 +1,12 @@
+import { api } from "./api";
+import { Login, LoginResponse } from "./../@types/autenticacao";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+export const autenticacaoService = {
+    async login(dados: Login): Promise<LoginResponse> {
+        const { data } = await api.post<LoginResponse>("Autenticacao/login", dados);
+
+        if (data?.token) {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Login, LoginResponse } from "../@types/autenticacao";
 import { api } from "./api";
@@ -11,6 +20,8 @@ export const autenticacaoService = {
         }
 
         return data;
+    },
+};
     }
 
     
