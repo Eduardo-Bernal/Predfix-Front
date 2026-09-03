@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   View,
@@ -21,6 +21,8 @@ import {
   useAudioPlayer,
   useAudioPlayerStatus,
 } from "expo-audio";
+
+import Slider from "@react-native-community/slider";
 
 import BottomNavBar from "../components/bottomNavBar";
 
@@ -48,31 +50,48 @@ export default function Detalhes() {
   const player = useAudioPlayer(audioUrl);
   const status = useAudioPlayerStatus(player);
 
-  const tocarAudio = () => {
+  const [arrastando, setArrastando] = useState(false);
+  const [tempoSelecionado, setTempoSelecionado] =
+    useState(0);
+
+  const tempoAtual = arrastando
+    ? tempoSelecionado
+    : status.currentTime;
+
+  const tocarAudio = async () => {
     if (status.playing) {
       player.pause();
-    } else {
-      player.play();
+      return;
     }
+
+    if (
+      status.duration > 0 &&
+      status.currentTime >= status.duration - 0.2
+    ) {
+      await player.seekTo(0);
+    }
+
+    player.play();
   };
 
   const formatarTempo = (segundos: number) => {
-    if (!segundos) {
+    if (!segundos || segundos < 0) {
       return "00:00";
     }
 
     const minutos = Math.floor(segundos / 60);
-    const segundosRestantes = Math.floor(segundos % 60);
+    const segundosRestantes = Math.floor(
+      segundos % 60
+    );
 
-    return `${String(minutos).padStart(2, "0")}:${String(
-      segundosRestantes
-    ).padStart(2, "0")}`;
+    return `${String(minutos).padStart(
+      2,
+      "0"
+    )}:${String(segundosRestantes).padStart(
+      2,
+      "0"
+    )}`;
   };
-
-  const progresso =
-    status.duration > 0
-      ? (status.currentTime / status.duration) * 100
-      : 0;
 
   if (carregando) {
     return (
@@ -119,7 +138,9 @@ export default function Detalhes() {
   return (
     <View style={styles.container}>
       <View style={styles.cabecalho}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+        >
           <Ionicons
             name="arrow-back"
             size={28}
@@ -134,7 +155,9 @@ export default function Detalhes() {
         <View style={{ width: 28 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.conteudo}>
+      <ScrollView
+        contentContainerStyle={styles.conteudo}
+      >
         <Text style={styles.titulo}>
           {inspecao.equipamento}
         </Text>
@@ -259,24 +282,44 @@ export default function Detalhes() {
             </TouchableOpacity>
 
             <View style={styles.audioInfo}>
-              <View style={styles.barraAudio}>
-                <View
-                  style={[
-                    styles.progressoAudio,
-                    {
-                      width: `${progresso}%`,
-                    },
-                  ]}
-                />
-              </View>
+              <Slider
+                style={styles.sliderAudio}
+                minimumValue={0}
+                maximumValue={
+                  status.duration || 1
+                }
+                value={tempoAtual}
+                minimumTrackTintColor="#0D2B6B"
+                maximumTrackTintColor="#E5E7EB"
+                thumbTintColor="#0D2B6B"
+                onSlidingStart={() => {
+                  setArrastando(true);
+                  setTempoSelecionado(
+                    status.currentTime
+                  );
+                }}
+                onValueChange={(valor) => {
+                  setTempoSelecionado(valor);
+                }}
+                onSlidingComplete={async (
+                  valor
+                ) => {
+                  await player.seekTo(valor);
+
+                  setTempoSelecionado(valor);
+                  setArrastando(false);
+                }}
+              />
 
               <View style={styles.tempos}>
                 <Text style={styles.tempo}>
-                  {formatarTempo(status.currentTime)}
+                  {formatarTempo(tempoAtual)}
                 </Text>
 
                 <Text style={styles.tempo}>
-                  {formatarTempo(status.duration)}
+                  {formatarTempo(
+                    status.duration
+                  )}
                 </Text>
               </View>
             </View>
@@ -409,22 +452,15 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
 
-  barraAudio: {
-    height: 7,
-    borderRadius: 10,
-    backgroundColor: "#E5E7EB",
-    overflow: "hidden",
-  },
-
-  progressoAudio: {
-    height: "100%",
-    backgroundColor: "#0D2B6B",
+  sliderAudio: {
+    width: "100%",
+    height: 40,
   },
 
   tempos: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 8,
+    marginTop: -4,
   },
 
   tempo: {
